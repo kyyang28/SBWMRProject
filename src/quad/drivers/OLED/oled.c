@@ -26,9 +26,12 @@
 #define OLED_CMD  				0					// Write command
 #define OLED_DATA 				1					// Write data
 
+static IO_t g_OLED_RST;
+static IO_t g_OLED_DC;
+static IO_t g_OLED_SCL;
+static IO_t g_OLED_SDA;
 
 uint8_t OLED_GRAM[128][8];	 
-
 
 void OLED_Refresh_Gram(void)
 {
@@ -183,19 +186,33 @@ void OLED_ShowString(uint8_t x, uint8_t y, const uint8_t *p)
 //初始化OLED					    
 void oledInit(oledConfig_t *oledConfig)
 { 	
-   	 
- 	RCC->APB2ENR|=1<<3;    //使能PORTB时钟	   	 
-	GPIOB->CRL&=0XFFF0FFFF; 
-	GPIOB->CRL|=0X00020000;//PB4 推挽输出   
+	g_OLED_RST = IOGetByTag(oledConfig->RST);		// PC13
+	g_OLED_DC = IOGetByTag(oledConfig->DC);			// PB4
+	g_OLED_SCL = IOGetByTag(oledConfig->SCL);		// PC15
+	g_OLED_SDA = IOGetByTag(oledConfig->SDA);		// PC14
 
-	RCC->APB2ENR|=1<<4;     	//使能PORTC时钟  
-	RCC->APB2ENR|=1<<0;     	//使能AFIO时钟	
-	GPIOC->CRH&=0X000FFFFF;	//PC13,14,15设置成输出 2MHz 推挽输出   
-	GPIOC->CRH|=0X22200000; 
-	PWR->CR|=1<<8;	//取消备份区写保护 
-	RCC->BDCR&=0xFFFFFFFE;	//外部低俗振荡器关闭 PC14，PC15成为普通IO	 	
-	BKP->CR&=0xFFFFFFFE; 	//侵入检测TAMPER引脚作为通用IO口使用 
-	PWR->CR&=0xFFFFFEFF;	//备份区写保护
+	IOInit(g_OLED_RST, OWNER_OLED, 0);
+	IOInit(g_OLED_DC, OWNER_OLED, 1);
+	IOInit(g_OLED_SCL, OWNER_OLED, 2);
+	IOInit(g_OLED_SDA, OWNER_OLED, 3);
+
+	IOConfigGPIO(g_OLED_RST, IOCFG_OUT_PP);
+	IOConfigGPIO(g_OLED_DC, IOCFG_OUT_PP);
+	IOConfigGPIO(g_OLED_SCL, IOCFG_OUT_PP);
+	IOConfigGPIO(g_OLED_SDA, IOCFG_OUT_PP);
+	
+// 	RCC->APB2ENR|=1<<3;    //使能PORTB时钟
+//	GPIOB->CRL&=0XFFF0FFFF;
+//	GPIOB->CRL|=0X00020000;//PB4 推挽输出   
+
+//	RCC->APB2ENR|=1<<4;     	//使能PORTC时钟  
+//	RCC->APB2ENR|=1<<0;     	//使能AFIO时钟	
+//	GPIOC->CRH&=0X000FFFFF;	//PC13,14,15设置成输出 2MHz 推挽输出   
+//	GPIOC->CRH|=0X22200000; 
+	PWR->CR |= 1<<8;	//
+	RCC->BDCR &= 0xFFFFFFFE;	//外部低俗振荡器关闭 PC14，PC15成为普通IO	 	
+//	BKP->CR&=0xFFFFFFFE; 	//侵入检测TAMPER引脚作为通用IO口使用 
+	PWR->CR &= 0xFFFFFEFF;	//取消备份区写保护 
 
 	OLED_RST_Clr();
 	delay(100);				// delay 100 ms

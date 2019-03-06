@@ -22,6 +22,8 @@ gyro_t gyro;				// gyro access functions
 static int32_t gyroADC[XYZ_AXIS_COUNT];		// TODO: uncomment back later
 static int32_t gyroZero[XYZ_AXIS_COUNT] = { 0, 0, 0 };
 
+float temperatureData;
+
 static uint16_t calibratingG = 0;
 static const gyroConfig_t *gyroConfig;
 
@@ -302,6 +304,12 @@ void gyroUpdate(timeUs_t currentTimeUs)
 //		printf("%s, %d\r\n", __FUNCTION__, __LINE__);
 		return;
 	}
+	
+	if (!gyro.dev.readTemperature(&gyro.dev)) {
+		return;
+	}
+	
+	temperatureData = ((float) gyro.dev.temperatureRaw) / 333.87 + 21.0; // Gyro chip temperature in degrees Centigrade
 	
 	gyro.dev.dataReady = false;
 	

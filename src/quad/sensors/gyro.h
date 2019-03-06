@@ -38,6 +38,7 @@ typedef struct gyro_s {
 }gyro_t;
 
 extern gyro_t gyro;
+extern float temperatureData;
 //extern int32_t gyroADC[XYZ_AXIS_COUNT];			// TODO: testing for now, remove later
 
 bool gyroInit(const gyroConfig_t *gyroConfigToUse);

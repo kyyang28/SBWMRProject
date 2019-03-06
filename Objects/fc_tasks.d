@@ -1,5 +1,6 @@
 .\objects\fc_tasks.o: src\quad\fc\fc_tasks.c
 .\objects\fc_tasks.o: F:\Keil_v5\ARM\ARMCC\Bin\..\include\stdio.h
+.\objects\fc_tasks.o: F:\Keil_v5\ARM\ARMCC\Bin\..\include\math.h
 .\objects\fc_tasks.o: src\quad\fc\fc_tasks.h
 .\objects\fc_tasks.o: .\src\quad\common\time.h
 .\objects\fc_tasks.o: F:\Keil_v5\ARM\ARMCC\Bin\..\include\stdint.h
@@ -57,7 +58,6 @@
 .\objects\fc_tasks.o: .\src\quad\common\axis.h
 .\objects\fc_tasks.o: .\src\quad\drivers\accgyro_mpu.h
 .\objects\fc_tasks.o: .\src\quad\common\maths.h
-.\objects\fc_tasks.o: F:\Keil_v5\ARM\ARMCC\Bin\..\include\math.h
 .\objects\fc_tasks.o: .\src\quad\rx\rx.h
 .\objects\fc_tasks.o: .\src\quad\build\debug.h
 .\objects\fc_tasks.o: .\src\quad\drivers\led.h

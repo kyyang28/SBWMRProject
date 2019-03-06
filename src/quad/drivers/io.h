@@ -35,7 +35,7 @@ typedef uint8_t ioConfig_t;		// packed IO configuration
 #define IO_TAG(pinID)		DEFIO_TAG(pinID)
 
 #define IO_CONFIG(mode, speed, otype, pupd)			((mode) | ((speed) << 2) | ((otype) << 4) | ((pupd) << 5))
-#define IOCFG_OUT_PP								IO_CONFIG(GPIO_Mode_OUT, 0, GPIO_OType_PP, GPIO_PuPd_NOPULL)
+#define IOCFG_OUT_PP								IO_CONFIG(GPIO_Mode_OUT, 0, GPIO_OType_PP, GPIO_PuPd_NOPULL)	// 0: GPIO_Low_Speed (2 MHz)
 #define IOCFG_OUT_PP_UP								IO_CONFIG(GPIO_Mode_OUT, 0, GPIO_OType_PP, GPIO_PuPd_UP)
 #define IOCFG_OUT_OD								IO_CONFIG(GPIO_Mode_OUT, 0, GPIO_OType_OD, GPIO_PuPd_NOPULL)
 #define IOCFG_OUT_OD_UP								IO_CONFIG(GPIO_Mode_OUT, 0, GPIO_OType_OD, GPIO_PuPd_UP)

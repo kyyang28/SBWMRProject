@@ -42,6 +42,7 @@ static bool detectSPISensorsAndUpdateDetectionResult(gyroDev_t *gyro)
 //		printf("%s, %d\r\n", __FUNCTION__, __LINE__);
 		gyro->mpuDetectionResult.sensor = MPU_9250_SPI;
 		gyro->mpuConfiguration.gyroReadXRegister = MPU_RA_GYRO_XOUT_H;
+		gyro->mpuConfiguration.temperatureReadRegister = MPU_RA_TEMP_OUT_H;
 		gyro->mpuConfiguration.read = mpu9250ReadRegister;
 		gyro->mpuConfiguration.slowRead = mpu9250SlowReadRegister;
 		gyro->mpuConfiguration.write = mpu9250WriteRegister;
@@ -93,6 +94,7 @@ mpuDetectionResult_t *mpuDetect(gyroDev_t *gyro)
 	}
 	
 	gyro->mpuConfiguration.gyroReadXRegister = MPU_RA_GYRO_XOUT_H;
+	gyro->mpuConfiguration.temperatureReadRegister = MPU_RA_TEMP_OUT_H;
 	
 //	printf("sig before mask: 0x%x, %s, %d\r\n", sig, __FUNCTION__, __LINE__);			// sig = 0x73
 
@@ -181,6 +183,20 @@ static void mpuIntExtiInit(gyroDev_t *gyro)
 void mpuGyroInit(struct gyroDev_s *gyro)
 {
 	mpuIntExtiInit(gyro);
+}
+
+bool mpuTemperatureRead(gyroDev_t *gyro)
+{
+	uint8_t data[2];
+	
+	const bool ack = gyro->mpuConfiguration.read(gyro->mpuConfiguration.temperatureReadRegister, 2, data);
+	if (!ack) {
+		return false;
+	}
+	
+	gyro->temperatureRaw = (int16_t)((data[0] << 8) | data[1]);
+	
+	return true;
 }
 
 bool mpuGyroRead(gyroDev_t *gyro)

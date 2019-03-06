@@ -1,5 +1,6 @@
 
 #include <stdio.h>
+#include <math.h>
 #include "fc_tasks.h"
 #include "fc_rc.h"
 #include "scheduler.h"
@@ -18,6 +19,7 @@
 #include "button.h"
 #include "rxSerial6Test.h"
 #include "system.h"
+#include "oled.h"
 
 //#define TASKS_LEDS_TESTING
 
@@ -32,6 +34,7 @@
 static void taskUpdateAccelerometer(timeUs_t currentTimeUs);
 static void taskMotorEncoder(timeUs_t currentTimeUs);
 static void taskUpdateGyro(timeUs_t currentTimeUs);
+static void taskOLEDDisplay(timeUs_t currentTimeUs);
 //static void taskBluetoothReceive(timeUs_t currentTimeUs);
 
 /* Tasks initialisation */
@@ -70,11 +73,18 @@ cfTask_t cfTasks[TASK_COUNT] = {
 	},
 
     [TASK_MOTORENCODER] = {
-        .taskName = "TESTMOTORENCODER",
+        .taskName = "MOTOR_ENCODER",
         .taskFunc = taskMotorEncoder,
         .desiredPeriod = TASK_PERIOD_HZ(100),            // 1000000 / 100 = 10000 us = 10 ms
         .staticPriority = TASK_PRIORITY_REALTIME,
     },
+	
+	[TASK_OLEDDISPLAY] = {
+		.taskName = "OLED_DISPLAY",
+		.taskFunc = taskOLEDDisplay,
+		.desiredPeriod = TASK_PERIOD_HZ(20),			// 1000000 / 20 = 50000 us = 50 ms
+		.staticPriority = TASK_PRIORITY_MEDIUM,
+	},
 	
 //	[TASK_BTRX] = {
 //		.taskName = "BLUETOOTH_RX",
@@ -87,7 +97,7 @@ cfTask_t cfTasks[TASK_COUNT] = {
 static void taskUpdateGyro(timeUs_t currentTimeUs)
 {
 	/* gyroUpdate */
-	gyroUpdate(currentTimeUs);	
+	gyroUpdate(currentTimeUs);
 }
 
 static void taskUpdateAccelerometer(timeUs_t currentTimeUs)
@@ -208,6 +218,8 @@ float velocitySetpoint = 0.0f;
 //float yawSetpoint = 0.0f;
 
 bool isMotorActivated = true;
+bool startCheckFlag = true;
+bool balanceActivated = false;
 
 extern uint8_t driveForward, driveReverse, turnLeft, turnRight;
 
@@ -326,8 +338,8 @@ static int stabilisationControlSBWMR(int pitchAngle, float gyroY)
 static int velocityControlSBWMR(int leftEncoder, int rightEncoder)
 {
 	static float velocityPwm, encoderError, encoder, encoderIntegral;
-	float Kp = 144.75;		// leftEncoder + rightEncoder with dividing by 2
-//	float Kp = 165.75;		// leftEncoder + rightEncoder with dividing by 2
+//	float Kp = 144.75;		// leftEncoder + rightEncoder with dividing by 2 (using TOP quadcopter landing plate)
+	float Kp = 116.75;		// leftEncoder + rightEncoder with dividing by 2 (w/o using TOP quadcopter landing plate)
 //	float Kp = 85.75;		// leftEncoder + rightEncoder w/o dividing by 2
 	float Ki = Kp / 200;
 	
@@ -357,12 +369,12 @@ static int velocityControlSBWMR(int leftEncoder, int rightEncoder)
 	encoderIntegral = encoderIntegral - velocityUpdatedMovement;
 	
 	/* 4000 */
-	if (encoderIntegral > 4000) {
-		encoderIntegral = 4000;
+	if (encoderIntegral > 5000) {
+		encoderIntegral = 5000;
 	}
 	
-	if (encoderIntegral < -4000) {
-		encoderIntegral = -4000;
+	if (encoderIntegral < -5000) {
+		encoderIntegral = -5000;
 	}
 	
 	velocityPwm = Kp * encoder + Ki * encoderIntegral;
@@ -570,17 +582,17 @@ static void taskMotorEncoder(timeUs_t currentTimeUs)
 {	
 //	printf("currentTimeUs: %u\r\n", currentTimeUs);
 	
-	Encoder1 = Read_Encoder(2);		// 2: TIM2
-	Encoder2 = Read_Encoder(4);		// 4: TIM4
+	Encoder1 = Read_Encoder(2);		// 2: TIM2, left encoder
+	Encoder2 = Read_Encoder(4);		// 4: TIM4, right encoder
 	
 //	printf("%d, %d\r\n", Encoder1, Encoder2);
 	
-	LED6_TOGGLE;
+	LED6_ON;
 	
 	/* gyroUpdate */
 //	gyroUpdate(currentTimeUs);			// gyro updated in taskUpdateGyro function
 
-#if 0	
+#if 0
     if (gyro.dev.mpuDetectionResult.sensor == MPU_9250_SPI && gyro.dev.calibrationFlag) {
 //        printf("%u,%.4f,%.4f,%.4f\r\n", currentTimeUs, gyro.gyroADCf[X], gyro.gyroADCf[Y], gyro.gyroADCf[Z]);
 //        printf("%.4f\t%.4f\t%.4f\t%d\r\n", gyro.gyroADCf[X], gyro.gyroADCf[Y], gyro.gyroADCf[Z], attitude.raw[Y]);
@@ -590,9 +602,16 @@ static void taskMotorEncoder(timeUs_t currentTimeUs)
     }
 #endif
 	
+//	/* Only activate the balancing routine when pitch angle is zero (SBWMR is vertical to the ground) */
+//	if ((startCheckFlag == true) && (attitude.raw[Y] == 0)) {
+//		startCheckFlag = false;
+//		balanceActivated = true;
+//		LED3_ON;
+//	}
+	
 //	printf("forward: %u\t back: %u\t left: %u\t right: %u\r\n", driveForward, driveReverse, turnLeft, turnRight);
 	
-	if (gyro.dev.mpuDetectionResult.sensor == MPU_9250_SPI && gyro.dev.calibrationFlag) {
+	if ((gyro.dev.mpuDetectionResult.sensor == MPU_9250_SPI) && gyro.dev.calibrationFlag) {
 		
 //		printf("buttonPressed: %d\r\n", button.dev.btnPressed);
 
@@ -640,6 +659,64 @@ static void taskMotorEncoder(timeUs_t currentTimeUs)
 //	printf("Motor2 pwm: %d\r\n", PWMMotor2);
 }
 
+static void taskOLEDDisplay(timeUs_t currentTimeUs)
+{	
+	/* +----------- Display SBWMR modes (N7ormal and Obstacle Avoidance) -------------+ */
+	OLED_ShowString(0, 0, "Mode: ");
+	
+	// TODO: OA condition check
+//	if (obstacleAvoidanceFlag == 1) {
+//		OLED_ShowString(60, 0, "OA");
+//	}
+	
+	OLED_ShowString(60, 0, "Normal");
+	
+	/* +------------------- Display temperature value -------------------+ */
+//	printf("temp: %.4f\r\n", temperatureData);
+	OLED_ShowString(00, 10, "Temp: ");
+	OLED_ShowNumber(46, 10, (int)temperatureData, 2, 12);		// display temperature integer part
+	OLED_ShowString(59, 10, ".");
+	OLED_ShowNumber(68, 10, (int)((round(temperatureData * 100) / 100 - (int)temperatureData) * 100), 2, 12);		// display temperature integer part
+	OLED_ShowString(85, 10, "`C");
+	
+	/* +------------------- Display encoder1 (left encoder) value -------------------+ */
+	OLED_ShowString(00, 20, "LeftEnco: ");
+	
+	if (Encoder1 < 0) {
+		OLED_ShowString(80, 20, "-");
+		OLED_ShowNumber(95, 20, -Encoder1, 3, 12);
+	} else {
+		OLED_ShowString(80, 20, "+");
+		OLED_ShowNumber(95, 20, Encoder1, 3, 12);
+	}
+	
+	/* +------------------- Display encoder2 (right encoder) value -------------------+ */
+	OLED_ShowString(00, 30, "RightEnco: ");
+	
+	if (Encoder2 < 0) {
+		OLED_ShowString(80, 30, "-");
+		OLED_ShowNumber(95, 30, -Encoder2, 3, 12);
+	} else {
+		OLED_ShowString(80, 30, "+");
+		OLED_ShowNumber(95, 30, Encoder2, 3, 12);
+	}
+
+	/* +---------------------------- Display Pitch angle -----------------------------+ */
+	OLED_ShowString(0, 50, "Pitch: ");
+	
+	if (attitude.raw[Y] < 0) {
+		OLED_ShowString(80, 50, "-");
+		OLED_ShowNumber(95, 50, -attitude.raw[Y], 3, 12);
+//		OLED_ShowNumber(45, 50, attitude.raw[Y] + 360, 3, 12);
+	} else {
+		OLED_ShowString(80, 50, "+");
+		OLED_ShowNumber(95, 50, attitude.raw[Y], 3, 12);		
+//		OLED_ShowNumber(45, 50, attitude.raw[Y], 3, 12);
+	}
+	
+	OLED_Refresh_Gram();
+}
+
 void fcTasksInit(void)
 {
     /* Clear RTOS queue and enable SYSTEM TASK */
@@ -648,20 +725,23 @@ void fcTasksInit(void)
 	/* Enable GYRO Task */
     setTaskEnabled(TASK_GYRO, true);
 
-	/* Enable MOTOR ENCODER TESTING Task */
-	setTaskEnabled(TASK_MOTORENCODER, true);
-	
 //	printf("ACC on: %d\r\n", sensors(SENSOR_ACC));						// sensors(SENSOR_ACC) = 1
 //	printf("accSamplingInterval: %u\r\n", acc.accSamplingInterval);		// acc.accSamplingInterval = 1000
-
+	
 	/* Enable ACCELEROMETER TASK */
 	if (sensors(SENSOR_ACC)) {
 		setTaskEnabled(TASK_ACCEL, true);
 		rescheduleTask(TASK_ACCEL, acc.accSamplingInterval);
 	}
 	
-	/* Enable ATTITUDE TASK */
+	/* Enable MOTOR ENCODER TESTING Task */
+	setTaskEnabled(TASK_MOTORENCODER, true);
+		
+	/* Enable ATTITUDE TASK (Data fusion of Euler angles (Roll, Pitch, and Yaw angles)) */
 	setTaskEnabled(TASK_ATTITUDE, sensors(SENSOR_ACC));
+
+	/* Enable OLED display TASK */
+	setTaskEnabled(TASK_OLEDDISPLAY, true);
 	
 	/* Enable BTRX TASK */
 //	setTaskEnabled(TASK_BTRX, true);	    

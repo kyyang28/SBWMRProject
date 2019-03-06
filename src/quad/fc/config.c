@@ -213,7 +213,7 @@ void ResetLedStatusConfig(LedStatusConfig_t *ledStatusConfig)
 	ledStatusConfig->polarity = 0;
 }
 
-void ResetDCBrushedMotorConfig(dcBrushedMotorConfig_t *dcBrushedMotorConfig)
+static void ResetDCBrushedMotorConfig(dcBrushedMotorConfig_t *dcBrushedMotorConfig)
 {
 	dcBrushedMotorConfig->AIN1 = IO_TAG(DC_BRUSHED_MOTOR1_AIN1);		// PE3
 	dcBrushedMotorConfig->AIN2 = IO_TAG(DC_BRUSHED_MOTOR1_AIN2);		// PE4
@@ -230,7 +230,7 @@ void ResetDCBrushedMotorConfig(dcBrushedMotorConfig_t *dcBrushedMotorConfig)
 	}
 }
 
-void ResetPwmEncoderConfig(pwmEncoderConfig_t *pwmEncoderConfig)
+static void ResetPwmEncoderConfig(pwmEncoderConfig_t *pwmEncoderConfig)
 {
 	for (int inputIndex = 0; inputIndex < PWM_ENCODER_INPUT_PORT_COUNT; inputIndex++) {
 		if (timerHardware[inputIndex].usageFlags & TIM_USE_ENCODER) {
@@ -239,17 +239,12 @@ void ResetPwmEncoderConfig(pwmEncoderConfig_t *pwmEncoderConfig)
 	}
 }
 
-void ResetOLEDConfig(oledConfig_t *oledConfig)
+static void ResetOLEDConfig(oledConfig_t *oledConfig)
 {
-//#define OLED_RST				PC13
-//#define OLED_DC				PB4
-//#define OLED_SCL				PC15
-//#define OLED_SDA				PC14
-
-	oledConfig->RST = IO_TAG(OLED_RST);		// PC13
-	oledConfig->DC = IO_TAG(OLED_DC);		// PB4
-	oledConfig->SCL = IO_TAG(OLED_SCL);		// PC15
-	oledConfig->SDA = IO_TAG(OLED_SDA);		// PC14	
+	oledConfig->RST = IO_TAG(OLED_RST);		// OLED_RST = PC13
+	oledConfig->DC = IO_TAG(OLED_DC);		// OLED_DC = PB4
+	oledConfig->SCL = IO_TAG(OLED_SCL);		// OLED_SCL = PC15
+	oledConfig->SDA = IO_TAG(OLED_SDA);		// OLED_SDA = PC14	
 }
 
 static void ResetAccelerometerTrims(flightDynamicsTrims_t *accelerometerTrims)

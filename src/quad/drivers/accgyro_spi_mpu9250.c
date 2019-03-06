@@ -253,6 +253,7 @@ bool mpu9250SpiGyroDetect(gyroDev_t *gyro)
 	
 	gyro->init = mpu9250SpiGyroInit;
 	gyro->read = mpuGyroRead;			// mpuGyroRead function takes 30 us (8K sampling rate) or 35 us (1K sampling rate) to sample the gyro data
+	gyro->readTemperature = mpuTemperatureRead;
 	gyro->intStatus = mpuCheckDataReady;
 	
 	/* 16.4 dps/lsb scale factor */

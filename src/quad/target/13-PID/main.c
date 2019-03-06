@@ -222,8 +222,12 @@ int main(void)
 		}
 	}
 #endif
-		
+	
 	systemState |= SYSTEM_STATE_SENSORS_READY;
+	
+	/* OLED init */
+	oledInit(OLEDConfig());
+	
 	
 	/* IMU init for data fusing Euler angles (Roll, Pitch and Yaw) */
 	imuInit();
@@ -233,9 +237,6 @@ int main(void)
 	gyroSetCalibrationCycles();
 #endif
 	
-	/* OLED init */
-	oledInit(OLEDConfig());
-
 	/* Latch active features again as some of them are modified by init() */
 	latchActiveFeatures();
 	

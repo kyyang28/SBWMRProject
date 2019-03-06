@@ -24,12 +24,13 @@ typedef enum {
 typedef struct gyroDev_s {
 	sensorGyroInitFuncPtr init;								// initialisation function
 	sensorGyroReadFuncPtr read;								// read 3 axis data function
-	sensorGyroReadDataFuncPtr temperature;					// read temperature if available
+	sensorGyroReadDataFuncPtr readTemperature;					// read temperature if available
 	sensorGyroInterruptStatusFuncPtr intStatus;
 	sensorGyroUpdateFuncPtr update;
 	extiCallbackRec_t exti;
 	float scale;
 	volatile int16_t gyroADCRaw[XYZ_AXIS_COUNT];
+	volatile int16_t temperatureRaw;
 	bool calibrationFlag;
 	uint8_t lpf;
 	gyroRateKHz_e gyroRateKHz;

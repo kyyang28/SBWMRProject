@@ -26,7 +26,8 @@ typedef enum {
     TASK_RX,				// 4
     TASK_SERIAL,			// 5
 	TASK_MOTORENCODER,		// 6
-	TASK_BTRX,				// 7
+	TASK_OLEDDISPLAY,		// 7
+	TASK_BTRX,				// 8
     TASK_LED3,
     TASK_LED4,
     TASK_LED5,

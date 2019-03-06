@@ -134,6 +134,7 @@ typedef struct mpuConfiguration_s {
 	mpuWriteRegisterFunc verifyWrite;
 	mpuResetFuncPtr reset;
 	uint8_t gyroReadXRegister;			// Y and Z must registers follow this, 2 words each
+	uint8_t temperatureReadRegister;	// temperature registers (MPU_RA_TEMP_OUT_H (0x41) and MPU_RA_TEMP_OUT_L (0x42))
 }mpuConfiguration_t;
 
 enum gyro_fsr_e {
@@ -168,6 +169,7 @@ struct gyroDev_s;
 struct accDev_s;
 void mpuGyroInit(struct gyroDev_s *gyro);
 mpuDetectionResult_t *mpuDetect(struct gyroDev_s *gyro);
+bool mpuTemperatureRead(struct gyroDev_s *gyro);
 bool mpuGyroRead(struct gyroDev_s *gyro);
 bool mpuAccRead(struct accDev_s *acc);
 bool mpuCheckDataReady(struct gyroDev_s *gyro);

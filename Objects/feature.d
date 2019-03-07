@@ -68,3 +68,4 @@
 .\objects\feature.o: .\src\quad\blackbox\blackbox.h
 .\objects\feature.o: .\src\quad\flight\imu.h
 .\objects\feature.o: .\src\quad\drivers\OLED\oled.h
+.\objects\feature.o: .\src\quad\drivers\button.h

@@ -242,7 +242,7 @@ void pwmEncoderInit(const pwmEncoderConfig_t *pwmEncoderConfig)
 
 void pwmRxInit(const pwmConfig_t *pwmConfig)
 {
-#if 1	
+#if 1
 //	printf("%s, %d\r\n", __FUNCTION__, __LINE__);
 	inputFilteringMode = pwmConfig->inputFilteringMode;
 	

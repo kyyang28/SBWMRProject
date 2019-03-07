@@ -168,11 +168,13 @@ int main(void)
 	/* Initialise external interrupt */
 	EXTIInit();
 	
-//	buttonInit();
+//	buttonInit();			// On-board user button interrupt initialisation
+
+	/* External button for SBWMR mode switches (Such as activating balancing and obstacle avoidance modes) */
+	modeSwitchBtnPollInit(ButtonModeSwitchConfig());
 	
 	/* allow configuration to settle */
 	delay(100);
-
 
 	/* Timer must be initialised before any channel is allocated */
 	timerInit();					// reinitialise the LED IO configuration to timer AF_PP if USE_LEDTIMER has been set.

@@ -54,6 +54,7 @@
 ".\objects\filter.o"
 ".\objects\maths.o"
 ".\objects\pwm.o"
+".\objects\rx.o"
 ".\objects\debug.o"
 ".\objects\scheduler.o"
 --strict --scatter ".\Objects\13-PID.sct"

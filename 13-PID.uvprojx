@@ -705,6 +705,11 @@
               <FileType>1</FileType>
               <FilePath>.\src\quad\rx\pwm.c</FilePath>
             </File>
+            <File>
+              <FileName>rx.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\src\quad\rx\rx.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>

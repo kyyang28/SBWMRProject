@@ -26,6 +26,7 @@
 #include "fc_rc.h"
 #include "sdcard.h"
 #include "blackbox_io.h"
+#include "button.h"
 
 #define BRUSHED_MOTORS_PWM_RATE 			16000
 #define BRUSHLESS_MOTORS_PWM_RATE 			480
@@ -237,6 +238,11 @@ static void ResetPwmEncoderConfig(pwmEncoderConfig_t *pwmEncoderConfig)
 			pwmEncoderConfig->ioTags[inputIndex] = timerHardware[inputIndex].tag;
 		}
 	}
+}
+
+static void ResetButtonModeSwitchConfig(button_t *buttonConfig)
+{
+	buttonConfig->btnPin = IO_TAG(BUTTON_MODE_SWITCH);
 }
 
 static void ResetOLEDConfig(oledConfig_t *oledConfig)
@@ -528,6 +534,10 @@ void createDefaultConfig(master_t *config)
 	ResetBeeperConfig(&config->beeperConfig);
 #endif
 
+	/* Initialise button mode switch */
+	ResetButtonModeSwitchConfig(&config->buttonModeSwitchConfig);
+
+	/* Initialise OLED */
 	ResetOLEDConfig(&config->oledConfig);
 
 //	resetProfile(&config->profile[0]);

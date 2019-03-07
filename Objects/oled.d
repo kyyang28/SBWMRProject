@@ -70,3 +70,4 @@
 .\objects\oled.o: .\src\quad\drivers\sdcard.h
 .\objects\oled.o: .\src\quad\blackbox\blackbox.h
 .\objects\oled.o: .\src\quad\flight\imu.h
+.\objects\oled.o: .\src\quad\drivers\button.h

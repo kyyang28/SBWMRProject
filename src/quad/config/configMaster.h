@@ -19,6 +19,7 @@
 //#include "pid.h"
 #include "imu.h"				// including pid.h
 #include "oled.h"
+#include "button.h"
 
 typedef struct master_s {
 	uint8_t version;
@@ -81,7 +82,10 @@ typedef struct master_s {
 	beeperConfig_t beeperConfig;
 #endif
 	uint32_t beeper_off_flags;
-	uint32_t preferred_beeper_off_flags;	
+	uint32_t preferred_beeper_off_flags;
+	
+	/* SBWMR Mode Switch Button configuration */
+	button_t buttonModeSwitchConfig;
 	
 	/* OLED related configuration */
 	oledConfig_t oledConfig;
@@ -124,6 +128,7 @@ extern controlRateConfig_t *currentControlRateProfile;
 #define PwmConfig(x)						(&masterConfig.pwmConfig)
 #define PwmEncoderConfig(x)					(&masterConfig.pwmEncoderConfig)
 #define OLEDConfig(x)						(&masterConfig.oledConfig)
+#define ButtonModeSwitchConfig(x)			(&masterConfig.buttonModeSwitchConfig)
 #define GyroConfig(x)						(&masterConfig.gyroConfig)
 #define AccelerometerConfig(x)				(&masterConfig.accelerometerConfig)
 #define ImuConfig(x)						(&masterConfig.imuConfig)

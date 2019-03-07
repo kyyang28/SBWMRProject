@@ -9,9 +9,9 @@ const timerDef_t timerDefinitions[HARDWARE_TIMER_DEFINITION_COUNT] = {
     { .TIMx = TIM5,  .rcc = RCC_APB1(TIM5),  .inputIrq = TIM5_IRQn},
     { .TIMx = TIM6,  .rcc = RCC_APB1(TIM6),  .inputIrq = 0},
     { .TIMx = TIM7,  .rcc = RCC_APB1(TIM7),  .inputIrq = 0},
-#ifndef STM32F411xE
+//#ifndef STM32F411xE
     { .TIMx = TIM8,  .rcc = RCC_APB2(TIM8),  .inputIrq = TIM8_CC_IRQn},
-#endif
+//#endif
     { .TIMx = TIM9,  .rcc = RCC_APB2(TIM9),  .inputIrq = TIM1_BRK_TIM9_IRQn},
     { .TIMx = TIM10, .rcc = RCC_APB2(TIM10), .inputIrq = TIM1_UP_TIM10_IRQn},
     { .TIMx = TIM11, .rcc = RCC_APB2(TIM11), .inputIrq = TIM1_TRG_COM_TIM11_IRQn},

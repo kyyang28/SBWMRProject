@@ -76,11 +76,11 @@
 .\objects\fc_tasks.o: .\src\quad\drivers\sdcard.h
 .\objects\fc_tasks.o: .\src\quad\blackbox\blackbox.h
 .\objects\fc_tasks.o: .\src\quad\drivers\OLED\oled.h
+.\objects\fc_tasks.o: .\src\quad\drivers\button.h
 .\objects\fc_tasks.o: src\quad\fc\runtime_config.h
 .\objects\fc_tasks.o: .\src\quad\drivers\pwm_output.h
 .\objects\fc_tasks.o: .\src\quad\drivers\timer.h
 .\objects\fc_tasks.o: .\src\quad\drivers\rcc.h
 .\objects\fc_tasks.o: .\src\quad\drivers\RCCTypes.h
-.\objects\fc_tasks.o: .\src\quad\drivers\button.h
 .\objects\fc_tasks.o: .\src\quad\drivers\rxSerial6Test.h
 .\objects\fc_tasks.o: .\src\quad\drivers\system.h

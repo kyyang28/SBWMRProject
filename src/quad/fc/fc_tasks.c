@@ -30,6 +30,23 @@
 #define TASK_PERIOD_MS(ms)              ((ms) * 1000)
 #define TASK_PERIOD_US(us)              (us)
 
+int Encoder1, Encoder2;
+int stabilisePwmVal, velocityPwmVal, yawPwmVal;
+int motor1Pwm, motor2Pwm;
+int yawMagnitude = 45;
+uint32_t stationaryFlag = 0;
+float velocityUpdatedMovement = 0.0f;
+float balanceSetpoint = 0.0f;
+float velocitySetpoint = 0.0f;
+//float yawSetpoint = 0.0f;
+
+bool isMotorActivated = true;
+
+extern uint8_t driveForward, driveReverse, turnLeft, turnRight;
+
+bool stopFlag = true;
+bool isCollisionAvoidanceModeActivated = false;			// collision avoidance is switched off by default
+
 //static void taskUpdateRxMain(timeUs_t currentTimeUs);
 static void taskUpdateAccelerometer(timeUs_t currentTimeUs);
 static void taskMotorEncoder(timeUs_t currentTimeUs);
@@ -105,6 +122,81 @@ static void taskUpdateAccelerometer(timeUs_t currentTimeUs)
 //	UNUSED(currentTimeUs);
 	
 	accUpdate(currentTimeUs, &AccelerometerConfig()->accelerometerTrims);
+}
+
+static uint8_t buttonModeSwitchHandler(void)
+{
+	static uint16_t buttonFlag, buttonCount, buttonOnceCount, longPressCount;
+
+	IO_t modeSwitchBtnPin = IOGetByTag(ButtonModeSwitchConfig()->btnPin);
+	
+	if ((IORead(modeSwitchBtnPin) == true)) {
+		longPressCount++;
+		
+		if (buttonFlag == 0) {
+			buttonFlag = 1;
+		}
+		
+//		printf("longPressCount: %u\r\n", longPressCount);
+		
+		if (longPressCount > 200) {
+			longPressCount = 0;
+			return 2;
+		}
+	} else {
+		buttonFlag = 0;
+		buttonCount = 0;
+	}
+	
+//	printf("buttonFlag: %u\r\n", buttonFlag);		// buttonFlag == 1 if button is pressed, otherwise 0
+//	printf("buttonCount: %u\r\n", buttonCount);		// buttonCount == 1 if button is pressed, otherwise 0
+	
+	if (buttonCount == 0) {
+		if (buttonFlag == 1) {
+			buttonOnceCount++;
+			buttonCount = 1;
+		}
+		
+		/* 
+		 * buttonTwiceCount is 1 if button is pressed once.
+		 * buttonTwiceCount is 2 if button is pressed twice.
+		 */
+//		printf("buttonOnceCount: %u\r\n", buttonOnceCount);
+		
+		if (buttonOnceCount == 1) {
+			buttonOnceCount = 0;
+			return 1;				// handling single click
+		}
+		
+//		if (buttonTwiceCount == 2) {
+//			buttonTwiceCount = 0;
+//			buttonOnceCount = 0;
+////			printf("%s, %d\r\n", __FUNCTION__, __LINE__);			
+//			return 2;			// handling double clicks
+//		}
+	}
+	
+	return 0;
+}
+
+static void buttonModeSwitchPollOps(button_t *buttonModeSwitchConfig)
+{
+	uint8_t res;
+	
+	res = buttonModeSwitchHandler();
+	
+//	printf("button click: %u\r\n", res);
+
+	/* Activate/Deactivate balancing routine by clicking button once */
+	if (res == 1) {
+		stopFlag = !stopFlag;
+//		printf("stopFlag: %d\r\n", stopFlag);
+	}
+	
+	/* Case for long pressing */
+	if (res == 2) {
+		isCollisionAvoidanceModeActivated = !isCollisionAvoidanceModeActivated;
+	}
 }
 
 //static void taskUpdateRxMain(timeUs_t currentTimeUs)			// TODO: make this function static for rtos tasks assignment
@@ -207,29 +299,19 @@ int Incremental_PIController(int Encoder, int Target)
 //#define DC_BRUSHED_MOTOR2_BIN1	PB14
 //#define DC_BRUSHED_MOTOR2_BIN2	PB15
 
-int Encoder1, Encoder2;
-int stabilisePwmVal, velocityPwmVal, yawPwmVal;
-int motor1Pwm, motor2Pwm;
-int yawMagnitude = 45;
-uint32_t stationaryFlag = 0;
-float velocityUpdatedMovement = 0.0f;
-float balanceSetpoint = 0.0f;
-float velocitySetpoint = 0.0f;
-//float yawSetpoint = 0.0f;
-
-bool isMotorActivated = true;
-bool startCheckFlag = true;
-bool balanceActivated = false;
-
-extern uint8_t driveForward, driveReverse, turnLeft, turnRight;
-
 bool activateMotors(int pitchAngle)
 {
 	bool isMotorEnabled = true;
 	
 //	printf("pitchAngle: %d\r\n", pitchAngle);
-	
-	if (pitchAngle < -50 || pitchAngle > 50 || (isMotorActivated == false)) {
+
+	/* If external button is not pressed after powered up (i.e. balance mode is not turned on), 
+	 * pitchAngle is greater or less than 50 and -50, 
+	 * motor is not activated.
+	 *
+	 * then update the isMotorEnabled to false (i.e. deactivate the motors), otherwise, activate the motors
+	 */
+	if ((stopFlag == true) || (pitchAngle < -50) || (pitchAngle > 50) || (isMotorActivated == false)) {
 //		printf("motor stop!\r\n");
 		isMotorEnabled = false;			// deactivate motors
 	} else {
@@ -263,8 +345,6 @@ void updateMotorPwm(int *motorPwm1, int *motorPwm2)
 
 //	printf("motor pwm: %d\r\n", motor);
 	if (*motorPwm1 > 0) {
-//		AIN2=1;
-//		AIN1=0;
 //		printf("*motorPwm1: %d, %d\r\n", *motorPwm1, __LINE__);
 //		IOWrite(DCBrushedMotorConfig()->AIN1, true);			// clear AIN1 to LOW
 //		IOWrite(DCBrushedMotorConfig()->AIN2, false);			// set AIN2 to HIGH
@@ -278,8 +358,6 @@ void updateMotorPwm(int *motorPwm1, int *motorPwm2)
 		IOLo(l_AIN2);
 #endif
 	} else {
-//		AIN2=0;
-//		AIN1=1;
 //		printf("*motorPwm1: %d, %d\r\n", *motorPwm1, __LINE__);
 //		GPIOB->BSRR |= 1<<13;				// set AIN1 to HIGH
 //		GPIOB->BSRR |= 1<<28;				// set AIN2 to LOW
@@ -295,7 +373,6 @@ void updateMotorPwm(int *motorPwm1, int *motorPwm2)
 	}
 	
 	pwmWriteDcBrushedMotor(0, ABS(*motorPwm1));	// 0 represents motor 1, write motor pwm value to motor 1 (PWMA)
-//	TIM1->CCR1 = ABS(*motorPwm1);
 	
 	if (*motorPwm2 > 0) {
 //		IOLo(DCBrushedMotorConfig()->BIN2);
@@ -311,9 +388,7 @@ void updateMotorPwm(int *motorPwm1, int *motorPwm2)
 		IOLo(l_BIN1);
 	}
 		
-//		printf("motorPwm: %d\r\n", motorPwm);
 	pwmWriteDcBrushedMotor(1, ABS(*motorPwm2));	// 1 represents motor 2, write motor pwm value to motor 12 (PWMB)
-//	*motor2PwmAddr = ABS(*motorPwm2);
 }
 
 //int Target_velocity = 2;
@@ -602,19 +677,13 @@ static void taskMotorEncoder(timeUs_t currentTimeUs)
     }
 #endif
 	
-//	/* Only activate the balancing routine when pitch angle is zero (SBWMR is vertical to the ground) */
-//	if ((startCheckFlag == true) && (attitude.raw[Y] == 0)) {
-//		startCheckFlag = false;
-//		balanceActivated = true;
-//		LED3_ON;
-//	}
+	/* Check if balance or obstacle avoidance modes are activated via external button */
+	buttonModeSwitchPollOps(ButtonModeSwitchConfig());
 	
 //	printf("forward: %u\t back: %u\t left: %u\t right: %u\r\n", driveForward, driveReverse, turnLeft, turnRight);
 	
 	if ((gyro.dev.mpuDetectionResult.sensor == MPU_9250_SPI) && gyro.dev.calibrationFlag) {
 		
-//		printf("buttonPressed: %d\r\n", button.dev.btnPressed);
-
 //        printf("%.4f\t%.4f\t%d\r\n", gyro.gyroADCf[Y], gyro.gyroADCf[Z], attitude.raw[Y]);
 		
 		/* Balance control */
@@ -637,11 +706,13 @@ static void taskMotorEncoder(timeUs_t currentTimeUs)
 
 		limitMotorPwm(&motor1Pwm, &motor2Pwm);
 		
+		/* Check if the SBWMR is lifted up or not, if so, update the isMotorActivated to false (deactivate the motors) */
 		if (liftUpSBWMR(acc.accSmooth[Z], attitude.raw[Y], Encoder1, Encoder2)) {
 //			printf("%s, %d\r\n", __FUNCTION__, __LINE__);
 			isMotorActivated = false;				// deactivate motors
 		}
 		
+		/* Check if the SBWMR is put down or not, if so, update the isMotorActivated to true (activate the motors) */
 		if (layDownSBWMR(attitude.raw[Y], Encoder1, Encoder2)) {
 			isMotorActivated = true;
 		}
@@ -660,58 +731,81 @@ static void taskMotorEncoder(timeUs_t currentTimeUs)
 }
 
 static void taskOLEDDisplay(timeUs_t currentTimeUs)
-{	
-	/* +----------- Display SBWMR modes (N7ormal and Obstacle Avoidance) -------------+ */
-	OLED_ShowString(0, 0, "Mode: ");
+{
+	static bool switchFromOADisplayFlag = false;
 	
-	// TODO: OA condition check
-//	if (obstacleAvoidanceFlag == 1) {
-//		OLED_ShowString(60, 0, "OA");
-//	}
+	/* +----------- Display SBWMR modes (Normal and Obstacle Avoidance) -------------+ */
+//	OLED_ShowString(0, 0, "M: ");
 	
-	OLED_ShowString(60, 0, "Normal");
+	if (isCollisionAvoidanceModeActivated == true) {
+		OLED_ShowString(0, 0, "Colli Avoidance");
+		switchFromOADisplayFlag = true;
+	} else {
+//		printf("flag: %d\r\n", switchFromOADisplayFlag);
+		if (switchFromOADisplayFlag == true) {
+			OLED_ShowString(0, 0, "     ");
+			OLED_ShowString(80, 0, "     ");
+			switchFromOADisplayFlag = false;
+		} else {
+			OLED_ShowString(40, 0, "Normal");
+		}
+	}
 	
 	/* +------------------- Display temperature value -------------------+ */
 //	printf("temp: %.4f\r\n", temperatureData);
-	OLED_ShowString(00, 10, "Temp: ");
-	OLED_ShowNumber(46, 10, (int)temperatureData, 2, 12);		// display temperature integer part
-	OLED_ShowString(59, 10, ".");
-	OLED_ShowNumber(68, 10, (int)((round(temperatureData * 100) / 100 - (int)temperatureData) * 100), 2, 12);		// display temperature integer part
-	OLED_ShowString(85, 10, "`C");
+	OLED_ShowString(00, 20, "Temp: ");
+	OLED_ShowNumber(46, 20, (int)temperatureData, 2, 12);		// display temperature integer part
+	OLED_ShowString(59, 20, ".");
+	OLED_ShowNumber(68, 20, (int)((round(temperatureData * 100) / 100 - (int)temperatureData) * 100), 2, 12);		// display temperature integer part
+	OLED_ShowString(85, 20, "`C");
 	
 	/* +------------------- Display encoder1 (left encoder) value -------------------+ */
-	OLED_ShowString(00, 20, "LeftEnco: ");
+	OLED_ShowString(00, 30, "LeftEnco: ");
 	
 	if (Encoder1 < 0) {
-		OLED_ShowString(80, 20, "-");
-		OLED_ShowNumber(95, 20, -Encoder1, 3, 12);
+		OLED_ShowString(80, 30, "-");
+		OLED_ShowNumber(95, 30, -Encoder1, 3, 12);
 	} else {
-		OLED_ShowString(80, 20, "+");
-		OLED_ShowNumber(95, 20, Encoder1, 3, 12);
+		OLED_ShowString(80, 30, "+");
+		OLED_ShowNumber(95, 30, Encoder1, 3, 12);
 	}
 	
 	/* +------------------- Display encoder2 (right encoder) value -------------------+ */
-	OLED_ShowString(00, 30, "RightEnco: ");
+	OLED_ShowString(00, 40, "RightEnco: ");
 	
 	if (Encoder2 < 0) {
-		OLED_ShowString(80, 30, "-");
-		OLED_ShowNumber(95, 30, -Encoder2, 3, 12);
+		OLED_ShowString(80, 40, "-");
+		OLED_ShowNumber(95, 40, -Encoder2, 3, 12);
 	} else {
-		OLED_ShowString(80, 30, "+");
-		OLED_ShowNumber(95, 30, Encoder2, 3, 12);
+		OLED_ShowString(80, 40, "+");
+		OLED_ShowNumber(95, 40, Encoder2, 3, 12);
 	}
 
 	/* +---------------------------- Display Pitch angle -----------------------------+ */
-	OLED_ShowString(0, 50, "Pitch: ");
+	OLED_ShowString(0, 50, "P/Y: ");
 	
+	/* Display Euler Pitch angle */
 	if (attitude.raw[Y] < 0) {
-		OLED_ShowString(80, 50, "-");
-		OLED_ShowNumber(95, 50, -attitude.raw[Y], 3, 12);
+		OLED_ShowString(40, 50, "-");
+		OLED_ShowNumber(45, 50, -attitude.raw[Y], 3, 12);
+//		OLED_ShowString(80, 50, "-");
+//		OLED_ShowNumber(95, 50, -attitude.raw[Y], 3, 12);
 //		OLED_ShowNumber(45, 50, attitude.raw[Y] + 360, 3, 12);
 	} else {
-		OLED_ShowString(80, 50, "+");
-		OLED_ShowNumber(95, 50, attitude.raw[Y], 3, 12);		
+		OLED_ShowString(40, 50, "+");
+		OLED_ShowNumber(45, 50, attitude.raw[Y], 3, 12);		
+//		OLED_ShowString(80, 50, "+");
+//		OLED_ShowNumber(95, 50, attitude.raw[Y], 3, 12);		
 //		OLED_ShowNumber(45, 50, attitude.raw[Y], 3, 12);
+	}
+
+	/* Display Euler Yaw angle */
+	if (attitude.raw[Z] < 0) {
+//		OLED_ShowString(80, 50, "-");
+		OLED_ShowNumber(85, 50, attitude.raw[Z] + 360, 3, 12);
+	} else {
+//		OLED_ShowString(80, 50, "+");
+		OLED_ShowNumber(85, 50, attitude.raw[Z], 3, 12);		
 	}
 	
 	OLED_Refresh_Gram();

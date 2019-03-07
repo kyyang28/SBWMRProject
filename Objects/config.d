@@ -70,6 +70,7 @@
 .\objects\config.o: .\src\quad\blackbox\blackbox.h
 .\objects\config.o: .\src\quad\flight\imu.h
 .\objects\config.o: .\src\quad\drivers\OLED\oled.h
+.\objects\config.o: .\src\quad\drivers\button.h
 .\objects\config.o: .\src\quad\config\config_eeprom.h
 .\objects\config.o: .\src\quad\drivers\pwm_output.h
 .\objects\config.o: .\src\quad\drivers\timer.h

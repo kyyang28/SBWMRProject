@@ -9,7 +9,8 @@
 #include "target.h"
 //#include "stdio.h"
 
-IO_t userBtnPin;
+static IO_t userBtnPin;
+static IO_t modeSwitchBtnPin;
 bool buttonPressed;
 
 button_t button;
@@ -88,4 +89,12 @@ void userBtnPollOps(void)
 		LED5_OFF;
 		LED6_OFF;
 	}
+}
+
+/* External button for SBWMR mode switches (Such as activating balancing and obstacle avoidance modes) */
+void modeSwitchBtnPollInit(button_t *buttonModeSwitchConfig)
+{
+	modeSwitchBtnPin = IOGetByTag(buttonModeSwitchConfig->btnPin);
+	IOInit(modeSwitchBtnPin, OWNER_BUTTON, 0);
+	IOConfigGPIO(modeSwitchBtnPin, IOCFG_IPD);
 }

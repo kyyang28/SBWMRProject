@@ -2277,7 +2277,7 @@ void TIM_CtrlPWMOutputs(TIM_TypeDef* TIMx, FunctionalState NewState)
   {
     /* Disable the TIM Main Output */
     TIMx->BDTR &= (uint16_t)~TIM_BDTR_MOE;
-  }  
+  }
 }
 
 /**

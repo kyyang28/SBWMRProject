@@ -2,7 +2,6 @@
 #include <stdio.h>
 #include <math.h>
 #include "fc_tasks.h"
-#include "fc_rc.h"
 #include "scheduler.h"
 #include "fc_core.h"
 #include "common.h"
@@ -17,9 +16,10 @@
 #include "pwm_output.h"
 #include "maths.h"
 #include "button.h"
-#include "rxSerial6Test.h"
 #include "system.h"
+#include "rx_pwm.h"
 #include "oled.h"
+#include "ultrasound.h"
 
 //#define TASKS_LEDS_TESTING
 
@@ -52,6 +52,7 @@ static void taskUpdateAccelerometer(timeUs_t currentTimeUs);
 static void taskMotorEncoder(timeUs_t currentTimeUs);
 static void taskUpdateGyro(timeUs_t currentTimeUs);
 static void taskOLEDDisplay(timeUs_t currentTimeUs);
+static void taskUltrasoundReadData(timeUs_t currentTimeUs);
 //static void taskBluetoothReceive(timeUs_t currentTimeUs);
 
 /* Tasks initialisation */
@@ -59,56 +60,61 @@ cfTask_t cfTasks[TASK_COUNT] = {
     [TASK_SYSTEM] = {
         .taskName = "SYSTEM",
         .taskFunc = taskSystem,
-//        .desiredPeriod = TASK_PERIOD_HZ(0.05),            // 1000000 / 0.05 = 20000000 us = 20000 ms = 20 s
-//        .desiredPeriod = TASK_PERIOD_HZ(0.5),            // 1000000 / 0.5 = 2000000 us = 2000 ms = 2 s
-//        .desiredPeriod = TASK_PERIOD_HZ(1),            // 1000000 / 1 = 1000000 us = 1000 ms = 1 s
-        .desiredPeriod = TASK_PERIOD_HZ(10),            // 1000000 / 10 = 100000 us = 100 ms
-        .staticPriority = TASK_PRIORITY_MEDIUM_HIGH,
+        .desiredPeriod = TASK_PERIOD_HZ(10),            	// 1000000 / 10 = 100000 us = 100 ms
+        .staticPriority = TASK_PRIORITY_MEDIUM_HIGH,		// TASK_PRIORITY_MEDIUM_HIGH = 4
     },
     
 	/* desiredPeriod = 4000 us = 4 ms = 250 Hz for F450 quad */
     [TASK_GYRO] = {
         .taskName = "GYRO",
         .taskFunc = taskUpdateGyro,
-//        .desiredPeriod = TASK_PERIOD_HZ(50),                // 1000000 / 50 = 20000 us = 20 ms
         .desiredPeriod = TASK_GYROPID_DESIRED_PERIOD,       // desiredPeriod = TASK_GYROPID_DESIRED_PERIOD = 125 us using STM32F4
-        .staticPriority = TASK_PRIORITY_HIGH,           // TASK_PRIORITY_REALTIME = 6
+        .staticPriority = TASK_PRIORITY_HIGH,           	// TASK_PRIORITY_HIGH = 5
     },
 	
 	[TASK_ACCEL] = {
 		.taskName = "ACCEL",
 		.taskFunc = taskUpdateAccelerometer,
 		.desiredPeriod = TASK_PERIOD_HZ(1000),				// 1000000 / 1000 = 1000 us, every 1ms
-		.staticPriority = TASK_PRIORITY_MEDIUM,				// 3
+		.staticPriority = TASK_PRIORITY_HIGH,				// TASK_PRIORITY_HIGH = 5
 	},
 	
 	[TASK_ATTITUDE] = {
 		.taskName = "ATTITUDE",
 		.taskFunc = taskIMUUpdateAttitude,
 		.desiredPeriod = TASK_PERIOD_HZ(100),				// 1000000 / 100 = 10000 us = 10 ms
-		.staticPriority = TASK_PRIORITY_MEDIUM,				// 3
+		.staticPriority = TASK_PRIORITY_MEDIUM,				// TASK_PRIORITY_MEDIUM = 3
 	},
 
     [TASK_MOTORENCODER] = {
         .taskName = "MOTOR_ENCODER",
         .taskFunc = taskMotorEncoder,
-        .desiredPeriod = TASK_PERIOD_HZ(100),            // 1000000 / 100 = 10000 us = 10 ms
-        .staticPriority = TASK_PRIORITY_REALTIME,
+        .desiredPeriod = TASK_PERIOD_HZ(100),            	// 1000000 / 100 = 10000 us = 10 ms
+        .staticPriority = TASK_PRIORITY_REALTIME,			// TASK_PRIORITY_REALTIME = 6
     },
 	
 	[TASK_OLEDDISPLAY] = {
 		.taskName = "OLED_DISPLAY",
 		.taskFunc = taskOLEDDisplay,
-		.desiredPeriod = TASK_PERIOD_HZ(20),			// 1000000 / 20 = 50000 us = 50 ms
-		.staticPriority = TASK_PRIORITY_MEDIUM,
+		.desiredPeriod = TASK_PERIOD_HZ(20),				// 1000000 / 20 = 50000 us = 50 ms
+		.staticPriority = TASK_PRIORITY_MEDIUM,				// TASK_PRIORITY_MEDIUM = 3
+	},
+
+#if defined(ULTRASOUND)	
+	[TASK_ULTRASOUND_UPDATE] = {
+		.taskName = "ULTRASOUND_UPDATE",
+		.taskFunc = ultrasoundUpdate,
+		.desiredPeriod = TASK_PERIOD_MS(70),				// 70 ms * 1000 = 70000 us, 70 ms required so that ultrasound pulses do not interference with each other
+		.staticPriority = TASK_PRIORITY_MEDIUM,				// TASK_PRIORITY_MEDIUM = 1
 	},
 	
-//	[TASK_BTRX] = {
-//		.taskName = "BLUETOOTH_RX",
-//		.taskFunc = taskBluetoothReceive,
-//		.desiredPeriod = TASK_PERIOD_HZ(1),			// 1000000 / 20 = 100000 us = 50 ms
-//		.staticPriority = TASK_PRIORITY_HIGH,
-//	}    
+	[TASK_ULTRASOUND_READDATA] = {
+		.taskName = "ULTRASOUND_READDATA",
+		.taskFunc = taskUltrasoundReadData,
+		.desiredPeriod = TASK_PERIOD_HZ(40),				// 1000000 / 40 = 25000 us = 25 ms = 40 Hz from HCSR-04 datasheet
+		.staticPriority = TASK_PRIORITY_MEDIUM,				// TASK_PRIORITY_MEDIUM = 1
+	},
+#endif	
 };
 
 static void taskUpdateGyro(timeUs_t currentTimeUs)
@@ -139,6 +145,7 @@ static uint8_t buttonModeSwitchHandler(void)
 		
 //		printf("longPressCount: %u\r\n", longPressCount);
 		
+		/* Check if button is pressed for at least 2 secs */
 		if (longPressCount > 200) {
 			longPressCount = 0;
 			return 2;
@@ -199,7 +206,7 @@ static void buttonModeSwitchPollOps(button_t *buttonModeSwitchConfig)
 	}
 }
 
-//static void taskUpdateRxMain(timeUs_t currentTimeUs)			// TODO: make this function static for rtos tasks assignment
+//static void taskUpdateRxMain(timeUs_t currentTimeUs)
 //{
 //	/* retrieve RX data */
 //	processRx(currentTimeUs);
@@ -222,7 +229,7 @@ int Read_Encoder(uint8_t TIMX)
 	{
 		case 2:
 			Encoder_TIM = (short)TIM2->CNT;
-			TIM2->CNT = 0;
+			TIM2->CNT = 0;						// Clear CNT to zero to retrieve the speed of the motor
 			break;
 		
 		case 3:
@@ -246,7 +253,7 @@ int Read_Encoder(uint8_t TIMX)
 
 void limitMotorPwm(int *motor1, int *motor2)
 {
-	/* The maximum PWM value is 7200 setup by dcBrushedMotorInit(), we use 6900 for the upper bound */
+	/* The maximum PWM value is 7200 setup by dcBrushedMotorInit(), 6900 for the upper bound */
 	int Amplitude = 6900;
 	
     if (*motor1 < -Amplitude)
@@ -303,7 +310,7 @@ bool activateMotors(int pitchAngle)
 {
 	bool isMotorEnabled = true;
 	
-//	printf("pitchAngle: %d\r\n", pitchAngle);
+//	printf("pitchAn7gle: %d\r\n", pitchAngle);
 
 	/* If external button is not pressed after powered up (i.e. balance mode is not turned on), 
 	 * pitchAngle is greater or less than 50 and -50, 
@@ -645,14 +652,6 @@ bool layDownSBWMR(int16_t pitchAngle, int32_t leftEncoder, int32_t rightEncoder)
 	return false;
 }
 
-//static void taskBluetoothReceive(timeUs_t currentTimeUs)
-//{
-//	uint8_t btReceiveData = 0;
-
-//	btReceiveData = btSerial6Read();
-////	printf("task_bt_data: %u\r\n", btReceiveData);	
-//}
-
 static void taskMotorEncoder(timeUs_t currentTimeUs)
 {	
 //	printf("currentTimeUs: %u\r\n", currentTimeUs);
@@ -730,9 +729,20 @@ static void taskMotorEncoder(timeUs_t currentTimeUs)
 //	printf("Motor2 pwm: %d\r\n", PWMMotor2);
 }
 
+static void taskUltrasoundReadData(timeUs_t currentTimeUs)
+{
+	int32_t ultrasoundDistanceData = ULTRASOUND_OUT_OF_RANGE;
+	
+	ultrasoundDistanceData = ultrasoundRead();
+	
+//	printf("ultrasoundDistanceData: %d\r\n", ultrasoundDistanceData);
+}
+
 static void taskOLEDDisplay(timeUs_t currentTimeUs)
 {
 	static bool switchFromOADisplayFlag = false;
+
+	UNUSED(currentTimeUs);
 	
 	/* +----------- Display SBWMR modes (Normal and Obstacle Avoidance) -------------+ */
 //	OLED_ShowString(0, 0, "M: ");
@@ -837,6 +847,9 @@ void fcTasksInit(void)
 	/* Enable OLED display TASK */
 	setTaskEnabled(TASK_OLEDDISPLAY, true);
 	
-	/* Enable BTRX TASK */
-//	setTaskEnabled(TASK_BTRX, true);	    
+	/* Enable ultrasound update TASK (Repeated sending startup sequence) */
+	setTaskEnabled(TASK_ULTRASOUND_UPDATE, true);
+
+	/* Enable ultrasound data collection TASK */
+	setTaskEnabled(TASK_ULTRASOUND_READDATA, true);
 }

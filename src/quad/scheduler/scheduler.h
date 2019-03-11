@@ -19,19 +19,21 @@ typedef enum {
 
 typedef enum {
     /* Actual tasks */
-    TASK_SYSTEM = 0,		// 0
-    TASK_GYRO,				// 1
-    TASK_ACCEL,				// 2
-    TASK_ATTITUDE,			// 3
-    TASK_RX,				// 4
-    TASK_SERIAL,			// 5
-	TASK_MOTORENCODER,		// 6
-	TASK_OLEDDISPLAY,		// 7
-	TASK_BTRX,				// 8
-    TASK_LED3,
-    TASK_LED4,
-    TASK_LED5,
-    TASK_LED6,
+    TASK_SYSTEM = 0,			// 0
+    TASK_GYRO,					// 1
+    TASK_ACCEL,					// 2
+    TASK_ATTITUDE,				// 3
+    TASK_RX,					// 4
+    TASK_SERIAL,				// 5
+	TASK_MOTORENCODER,			// 6
+	TASK_OLEDDISPLAY,			// 7
+	TASK_ULTRASOUND_UPDATE,		// 8
+	TASK_ULTRASOUND_READDATA,	// 9
+//	TASK_BTRX,					// 9
+//    TASK_LED3,
+//    TASK_LED4,
+//    TASK_LED5,
+//    TASK_LED6,
 
 #ifdef BEEPER
     TASK_BEEPER,

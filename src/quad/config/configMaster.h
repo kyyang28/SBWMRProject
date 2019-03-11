@@ -20,6 +20,7 @@
 #include "imu.h"				// including pid.h
 #include "oled.h"
 #include "button.h"
+#include "ultrasound_hcsr04.h"
 
 typedef struct master_s {
 	uint8_t version;
@@ -77,6 +78,9 @@ typedef struct master_s {
 	/* Encoder related configuration */
 	pwmEncoderConfig_t pwmEncoderConfig;
 	
+	/* Ultrasound related configuration */
+	ultrasoundConfig_t ultrasoundConfig;	
+	
 	/* BEEPER related configuration */
 #ifdef BEEPER
 	beeperConfig_t beeperConfig;
@@ -89,7 +93,7 @@ typedef struct master_s {
 	
 	/* OLED related configuration */
 	oledConfig_t oledConfig;
-	
+		
 #ifdef USE_SDCARD
 	sdcardConfig_t sdcardConfig;
 #endif
@@ -127,6 +131,7 @@ extern controlRateConfig_t *currentControlRateProfile;
 #define MixerConfig(x)						(&masterConfig.mixerConfig)
 #define PwmConfig(x)						(&masterConfig.pwmConfig)
 #define PwmEncoderConfig(x)					(&masterConfig.pwmEncoderConfig)
+#define UltrasoundConfig(x)					(&masterConfig.ultrasoundConfig)
 #define OLEDConfig(x)						(&masterConfig.oledConfig)
 #define ButtonModeSwitchConfig(x)			(&masterConfig.buttonModeSwitchConfig)
 #define GyroConfig(x)						(&masterConfig.gyroConfig)

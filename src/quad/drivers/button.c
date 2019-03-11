@@ -7,7 +7,6 @@
 #include "exti.h"
 #include "nvic.h"
 #include "target.h"
-//#include "stdio.h"
 
 static IO_t userBtnPin;
 static IO_t modeSwitchBtnPin;

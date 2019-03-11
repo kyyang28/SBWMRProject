@@ -447,7 +447,7 @@ void timerChOvrHandlerInit(timerOvrHandlerRec_t *self, timerOvrHandlerCallback *
 static void timerChConfig_UpdateOverflow(timerConfig_t *cfg, TIM_TypeDef *tim)
 {
 	timerOvrHandlerRec_t **chain = &cfg->overflowCallbackActive;
-	
+
 	/* It seems __cleanup__ doesn't get invoked in Keil IDE */
 	//for (uint8_t __basepri_save __attribute__ ((__cleanup__(__basepriRestoreMem))) = __get_BASEPRI(), __ToDo = __basepriSetMemRetVal(NVIC_PRIO_TIMER); __ToDo ; __ToDo = 0) {
 //	ATOMIC_BLOCK(NVIC_PRIO_TIMER) {
@@ -463,7 +463,10 @@ static void timerChConfig_UpdateOverflow(timerConfig_t *cfg, TIM_TypeDef *tim)
 	
 	/* enable or disable IRQ */
 //	printf("cfg->overflowCallbackActive: 0x%x, %s, %d\r\n", (uint32_t)cfg->overflowCallbackActive, __FUNCTION__, __LINE__);	// (uint32_t)cfg->overflowCallbackActive = 0x200017dc
+
+//	printf("tim: 0x%x\r\n", (uint32_t)tim);	
 	TIM_ITConfig(tim, TIM_IT_Update, cfg->overflowCallbackActive ? ENABLE : DISABLE);	// ENABLE TIM_IT_Update timer overflow interrupt here
+//	TIM_ITConfig(tim, TIM_IT_Update, ENABLE);	// ENABLE TIM_IT_Update timer overflow interrupt here
 }
 
 /* config edge and overflow callback for channel. Try to avoid overflowCallback, it is a bit expensive */
@@ -475,7 +478,7 @@ void timerChConfigCallbacks(const timerHardware_t *timHw, timerCCHandlerRec_t *e
 	if (timerIndex > USED_TIMER_COUNT) {
 		return;
 	}
-	
+
 //	printf("timHw->channel: %u, %s, %d\r\n", timHw->channel, __FUNCTION__, __LINE__);	// timHw->channel = 0 (TIM5 channel 1)
 	uint8_t channelIndex = lookupChannelIndex(timHw->channel);
 //	printf("channelIndex: %u, %s, %d\r\n", channelIndex, __FUNCTION__, __LINE__);
@@ -493,6 +496,7 @@ void timerChConfigCallbacks(const timerHardware_t *timHw, timerCCHandlerRec_t *e
 		TIM_ITConfig(timHw->tim, TIM_IT_CCx(timHw->channel), ENABLE);			// ENABLE TIM_IT_CC1 timer compare interrupt here
 	}
 	
+//	printf("timHw->tim: 0x%x\r\n", (uint32_t)timHw->tim);
 	timerChConfig_UpdateOverflow(&timerConfig[timerIndex], timHw->tim);			// ENABLE TIM_IT_Update timer overflow interrupt in this function
 }
 
@@ -625,8 +629,48 @@ _TIM_IRQ_HANDLER(TIM1_CC_IRQHandler, 1);
 _TIM_IRQ_HANDLER(TIM2_IRQHandler, 2);
 #endif
 
+#if 1
 #if USED_TIMERS & TIM_N(3)
 _TIM_IRQ_HANDLER(TIM3_IRQHandler, 3);
+#endif
+#else
+uint16_t TIM3CH3_CAPTURE_STA, TIM3CH3_CAPTURE_VAL;
+void TIM3_IRQHandler(void)
+{
+	uint16_t tsr;
+	tsr=TIM3->SR;
+	if((TIM3CH3_CAPTURE_STA&0X80)==0)//还未成功捕获	
+				{
+								if(tsr&0X01)//溢出
+								{	    
+										if(TIM3CH3_CAPTURE_STA&0X40)//已经捕获到高电平了
+										{
+											if((TIM3CH3_CAPTURE_STA&0X3F)==0X3F)//高电平太长了
+											{
+												TIM3CH3_CAPTURE_STA|=0X80;//标记成功捕获了一次
+												TIM3CH3_CAPTURE_VAL=0XFFFF;
+											}else TIM3CH3_CAPTURE_STA++;
+										}	 
+								}
+						   	if(tsr&0x08)//捕获3发生捕获事件
+				    	{	
+											if(TIM3CH3_CAPTURE_STA&0X40)		//捕获到一个下降沿 		
+											{	  			
+											TIM3CH3_CAPTURE_STA|=0X80;		//标记成功捕获到一次高电平脉宽
+											TIM3CH3_CAPTURE_VAL=TIM3->CCR3;	//获取当前的捕获值.
+											TIM3->CCER&=~(1<<9);			//CC1P=0 设置为上升沿捕获
+									  	}else  								//还未开始,第一次捕获上升沿
+				   	{
+											TIM3CH3_CAPTURE_STA=0;			//清空
+											TIM3CH3_CAPTURE_VAL=0;
+											TIM3CH3_CAPTURE_STA|=0X40;		//标记捕获到了上升沿
+											TIM3->CNT=0;					//计数器清空
+											TIM3->CCER|=1<<9; 				//CC1P=1 设置为下降沿捕获
+							}		    
+					    	}			     	    					   
+		   }
+			 TIM3->SR=0;//清除中断标志位 	     
+}
 #endif
 
 #if USED_TIMERS & TIM_N(4)

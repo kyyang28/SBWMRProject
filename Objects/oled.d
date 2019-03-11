@@ -71,3 +71,4 @@
 .\objects\oled.o: .\src\quad\blackbox\blackbox.h
 .\objects\oled.o: .\src\quad\flight\imu.h
 .\objects\oled.o: .\src\quad\drivers\button.h
+.\objects\oled.o: .\src\quad\drivers\ultrasound_hcsr04.h

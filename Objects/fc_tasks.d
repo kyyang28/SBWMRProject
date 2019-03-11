@@ -4,7 +4,6 @@
 .\objects\fc_tasks.o: src\quad\fc\fc_tasks.h
 .\objects\fc_tasks.o: .\src\quad\common\time.h
 .\objects\fc_tasks.o: F:\Keil_v5\ARM\ARMCC\Bin\..\include\stdint.h
-.\objects\fc_tasks.o: src\quad\fc\fc_rc.h
 .\objects\fc_tasks.o: .\src\quad\scheduler\scheduler.h
 .\objects\fc_tasks.o: F:\Keil_v5\ARM\ARMCC\Bin\..\include\stdbool.h
 .\objects\fc_tasks.o: F:\Keil_v5\ARM\ARMCC\Bin\..\include\string.h
@@ -77,10 +76,11 @@
 .\objects\fc_tasks.o: .\src\quad\blackbox\blackbox.h
 .\objects\fc_tasks.o: .\src\quad\drivers\OLED\oled.h
 .\objects\fc_tasks.o: .\src\quad\drivers\button.h
+.\objects\fc_tasks.o: .\src\quad\drivers\ultrasound_hcsr04.h
 .\objects\fc_tasks.o: src\quad\fc\runtime_config.h
 .\objects\fc_tasks.o: .\src\quad\drivers\pwm_output.h
 .\objects\fc_tasks.o: .\src\quad\drivers\timer.h
 .\objects\fc_tasks.o: .\src\quad\drivers\rcc.h
 .\objects\fc_tasks.o: .\src\quad\drivers\RCCTypes.h
-.\objects\fc_tasks.o: .\src\quad\drivers\rxSerial6Test.h
 .\objects\fc_tasks.o: .\src\quad\drivers\system.h
+.\objects\fc_tasks.o: .\src\quad\sensors\ultrasound.h

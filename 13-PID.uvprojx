@@ -551,11 +551,6 @@
               <FilePath>.\src\quad\drivers\rxSerial3Test.c</FilePath>
             </File>
             <File>
-              <FileName>rxSerial6Test.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\src\quad\drivers\rxSerial6Test.c</FilePath>
-            </File>
-            <File>
               <FileName>sdcard_standard.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\src\quad\drivers\sdcard_standard.c</FilePath>
@@ -594,6 +589,16 @@
               <FileName>oled.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\src\quad\drivers\OLED\oled.c</FilePath>
+            </File>
+            <File>
+              <FileName>bluetoothSerial6.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\src\quad\drivers\bluetoothSerial6.c</FilePath>
+            </File>
+            <File>
+              <FileName>ultrasound_hcsr04.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\src\quad\drivers\ultrasound_hcsr04.c</FilePath>
             </File>
           </Files>
         </Group>
@@ -679,6 +684,11 @@
               <FileName>compass.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\src\quad\sensors\compass.c</FilePath>
+            </File>
+            <File>
+              <FileName>ultrasound.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\src\quad\sensors\ultrasound.c</FilePath>
             </File>
           </Files>
         </Group>

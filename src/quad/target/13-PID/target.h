@@ -30,7 +30,7 @@
 /* SBWMR Mode Switch Button Pin */
 #define BUTTON_MODE_SWITCH		PA15
 
-/* DC Motors PINs */
+/* DC Motors Pins */
 #define DC_BRUSHED_MOTOR1_AIN1	PB13
 #define DC_BRUSHED_MOTOR1_AIN2	PB12
 #define DC_BRUSHED_MOTOR2_BIN1	PB14
@@ -40,13 +40,19 @@
 //#define DC_BRUSHED_MOTOR2_BIN1	PC13
 //#define DC_BRUSHED_MOTOR2_BIN2	PC15
 
+/* Ultrasound Pins */
+#define ULTRASOUND
+#define ULTRASOUND_1_TRIGGER	PC8
+#define ULTRASOUND_1_ECHO		PC9
+//#define ULTRASOUND_1_TRIGGER	PC8
+//#define ULTRASOUND_2_TRIGGER	PC9
+
 /* OLED PINs */
 #define OLED_RST				PC13
 #define OLED_DC					PB4
 #define OLED_SCL				PC15
 #define OLED_SDA				PC14
 
-//#define BEEPER					PA1		// PA1 is for MOTOR 1. UNCOMMENT this line to use BEEPER
 #define BEEPER					PE2		// UNCOMMENT this line to use BEEPER
 
 #define USE_EXTI
@@ -80,7 +86,7 @@
 
 #define USE_UART6
 #ifdef USE_UART6
-#define UART6_RX_PIN        	PC7			// RX line for SBUS data of FrSKY X4R-SB receiver
+#define UART6_RX_PIN        	PC7			// RX line for SBUS data of FrSKY X4R-SB receiver (quadcopter), or bluetooth for SBWMR
 #define UART6_TX_PIN        	PC6
 #endif
 
@@ -96,6 +102,7 @@
 //#define USE_I2C							// uncomment this line to use I2C interface
 
 #ifdef USE_I2C
+
 //#define SOFT_I2C_SCL			PB6
 //#define SOFT_I2C_SCL			PB8
 //#define SOFT_I2C_SDA			PB9
@@ -108,6 +115,7 @@
 
 #define USE_GYRO_I2C_MPU9250		// uncomment this line when uses MPU9250 with I2C interfacce
 #define USE_ACC_I2C_MPU9250			// uncomment this line when uses the MPU9250 ACC with I2C interface
+
 #endif
 /* +-----------------------------------------------------------------------------------+ */
 /* +--------------------------------------- I2C ---------------------------------------+ */
@@ -119,6 +127,7 @@
 #define USE_SPI						// uncomment this line to use SPI interface
 
 #ifdef USE_SPI
+
 #define USE_SPI_DEVICE_1			// SPI1 for MPU9250 MEMS sensor
 //#define USE_SPI_DEVICE_2			// SPI2 for SDCARD interface
 //#define USE_SPI_DEVICE_3
@@ -232,7 +241,7 @@
 /* Declare the default features */
 #ifndef DEFAULT_FEATURES
 //#define DEFAULT_FEATURES		0							// could be members of features_e
-#define DEFAULT_FEATURES		(FEATURE_MOTOR_STOP | FEATURE_ANTI_GRAVITY)			// could be members of features_e
+#define DEFAULT_FEATURES		(FEATURE_ULTRASOUND)			// could be members of features_e
 //#define DEFAULT_FEATURES		(FEATURE_AIRMODE | FEATURE_MOTOR_STOP)			// could be members of features_e
 //#define DEFAULT_FEATURES		(FEATURE_AIRMODE | FEATURE_SDCARD | FEATURE_BLACKBOX)			// could be members of features_e
 #endif
@@ -242,7 +251,7 @@
 #endif
 
 /* +-------------------------------------------------------------------------------------+ */
-/* +--------------------------------------- Radio ---------------------------------------+ */
+/* +--------------------------------------- Flash ---------------------------------------+ */
 /* +-------------------------------------------------------------------------------------+ */
 
 #define FLASH_SIZE						1024			// TODO: FLASH_SIZE will be defined in Makefile later

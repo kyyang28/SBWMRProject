@@ -71,11 +71,12 @@
 .\objects\main.o: .\src\quad\flight\imu.h
 .\objects\main.o: .\src\quad\drivers\OLED\oled.h
 .\objects\main.o: .\src\quad\drivers\button.h
+.\objects\main.o: .\src\quad\drivers\ultrasound_hcsr04.h
 .\objects\main.o: .\src\quad\config\config_eeprom.h
 .\objects\main.o: .\src\quad\drivers\gps.h
 .\objects\main.o: .\src\quad\drivers\rxSerial1Test.h
 .\objects\main.o: .\src\quad\drivers\rxSerial3Test.h
-.\objects\main.o: .\src\quad\drivers\rxSerial6Test.h
+.\objects\main.o: .\src\quad\drivers\bluetoothSerial6.h
 .\objects\main.o: F:\Keil_v5\ARM\ARMCC\Bin\..\include\stdio.h
 .\objects\main.o: .\src\quad\drivers\bitband_i2c_soft.h
 .\objects\main.o: .\src\quad\drivers\bus_spi.h
@@ -92,3 +93,4 @@
 .\objects\main.o: .\src\quad\scheduler\scheduler.h
 .\objects\main.o: F:\Keil_v5\ARM\ARMCC\Bin\..\include\string.h
 .\objects\main.o: .\src\quad\fc\runtime_config.h
+.\objects\main.o: .\src\quad\sensors\ultrasound.h

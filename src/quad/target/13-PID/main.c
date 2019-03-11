@@ -18,7 +18,7 @@
 #include "gps.h"
 #include "rxSerial1Test.h"
 #include "rxSerial3Test.h"
-#include "rxSerial6Test.h"
+#include "bluetoothSerial6.h"
 #include <stdio.h>
 #include "bus_i2c.h"
 #include "bitband_i2c_soft.h"					// self-implemented i2c protocol
@@ -61,6 +61,7 @@
 #include "runtime_config.h"
 #include "imu.h"
 #include "oled.h"
+#include "ultrasound.h"
 
 
 typedef enum {
@@ -90,7 +91,6 @@ int fputc(int ch, FILE *f)
 //	gpsWrite(ch);
 //	rxSerial1TestWrite(ch);
 	rxSerial3TestWrite(ch);
-//	rxSerial6TestWrite(ch);
     
     /* If everything is OK, you have to return character written */
     return ch;
@@ -107,7 +107,6 @@ int fputc(int ch, FILE *f)
 PUTCHAR_PROTOTYPE
 {
 	rxSerial3TestWrite(ch);
-//	rxSerial6TestWrite(ch);
 	return ch;
 }
 #endif
@@ -115,6 +114,16 @@ PUTCHAR_PROTOTYPE
 void main_process(void)
 {
     scheduler();
+}
+
+static bool ultrasoundDetect(void)
+{
+	if (feature(FEATURE_ULTRASOUND)) {
+		sensorSet(SENSOR_ULTRASOUND);
+		return true;
+	}
+	
+	return false;
 }
 
 int main(void)
@@ -138,7 +147,9 @@ int main(void)
 	/* Initialise debugging serial port */
 //	rxSerial1TestInit();
 	rxSerial3TestInit();
-	rxSerial6TestInit();
+	
+	/* Initialise bluetooth serial */
+	bluetoothSerial6Init();
 	
 	/* Write masterConfig info into FLASH EEPROM
 	 *
@@ -180,11 +191,18 @@ int main(void)
 	timerInit();					// reinitialise the LED IO configuration to timer AF_PP if USE_LEDTIMER has been set.
 									// INFO: To use NORMAL LEDs, turn off the USE_LEDTIMER micro in target.h
 
-	/* DC brushed motor init, timer ARR = 7200  */		
+	/* DC brushed motor init, timer ARR = 7200  */
 	dcBrushedMotorInit(DCBrushedMotorConfig());
 
 	/* Initialise Timer Encoder Interface Mode for Incremental Encoders attached on DC Brushed Motors */
 	pwmEncoderInit(PwmEncoderConfig());
+	
+	/* Ultrasound timer initialisation */
+#ifdef ULTRASOUND
+	if (ultrasoundDetect()) {
+		ultrasoundInit(UltrasoundConfig());				// from rx_pwm.c	ultrasound timer init
+	}
+#endif
 	
 #ifdef USE_SPI			// USE_SPI is defined in target.h
 	#ifdef USE_SPI_DEVICE_1
@@ -229,7 +247,6 @@ int main(void)
 	
 	/* OLED init */
 	oledInit(OLEDConfig());
-	
 	
 	/* IMU init for data fusing Euler angles (Roll, Pitch and Yaw) */
 	imuInit();

@@ -27,6 +27,7 @@
 #include "sdcard.h"
 #include "blackbox_io.h"
 #include "button.h"
+#include "ultrasound_hcsr04.h"
 
 #define BRUSHED_MOTORS_PWM_RATE 			16000
 #define BRUSHLESS_MOTORS_PWM_RATE 			480
@@ -216,10 +217,10 @@ void ResetLedStatusConfig(LedStatusConfig_t *ledStatusConfig)
 
 static void ResetDCBrushedMotorConfig(dcBrushedMotorConfig_t *dcBrushedMotorConfig)
 {
-	dcBrushedMotorConfig->AIN1 = IO_TAG(DC_BRUSHED_MOTOR1_AIN1);		// PE3
-	dcBrushedMotorConfig->AIN2 = IO_TAG(DC_BRUSHED_MOTOR1_AIN2);		// PE4
-	dcBrushedMotorConfig->BIN1 = IO_TAG(DC_BRUSHED_MOTOR2_BIN1);		// PC13
-	dcBrushedMotorConfig->BIN2 = IO_TAG(DC_BRUSHED_MOTOR2_BIN2);		// PC15
+	dcBrushedMotorConfig->AIN1 = IO_TAG(DC_BRUSHED_MOTOR1_AIN1);		// PB13
+	dcBrushedMotorConfig->AIN2 = IO_TAG(DC_BRUSHED_MOTOR1_AIN2);		// PB12
+	dcBrushedMotorConfig->BIN1 = IO_TAG(DC_BRUSHED_MOTOR2_BIN1);		// PB14
+	dcBrushedMotorConfig->BIN2 = IO_TAG(DC_BRUSHED_MOTOR2_BIN2);		// PB15
 
 	/* MAX_SUPPORTED_DC_BRUSHED_MOTORS_FOR_SBWMR = 2 */
 	int motorIndex = 0;
@@ -238,6 +239,37 @@ static void ResetPwmEncoderConfig(pwmEncoderConfig_t *pwmEncoderConfig)
 			pwmEncoderConfig->ioTags[inputIndex] = timerHardware[inputIndex].tag;
 		}
 	}
+}
+
+#if 0
+static void ResetUltrasoundTimerConfig(ultrasoundTimerConfig_t *ultrasoundTimerConfig)
+{
+	/* Initialisation for standard trigger output pins */
+	ultrasoundTimerConfig->trigger1IOTag = IO_TAG(ULTRASOUND_1_TRIGGER);
+	ultrasoundTimerConfig->trigger2IOTag = IO_TAG(ULTRASOUND_2_TRIGGER);
+
+	/* Initialisation for timer pwm echo input pins
+	 * PWM_ULTRASOUND_ECHO_PORT_COUNT = 2
+	 */
+	int ultrasoundIndex = 0;
+	for (int i = 0; i < USABLE_TIMER_CHANNEL_COUNT && ultrasoundIndex < PWM_ULTRASOUND_ECHO_PORT_COUNT; i++) {
+		if (timerHardware[i].usageFlags & TIM_USE_PWM) {
+			ultrasoundTimerConfig->ioTags[ultrasoundIndex] = timerHardware[i].tag;		// program is stucked at this line for some reasons when using TIM1
+			ultrasoundIndex++;
+		}
+	}
+}
+#endif
+
+static void ResetUltrasoundConfig(ultrasoundConfig_t *ultrasoundConfig)
+{
+#if defined(ULTRASOUND_1_TRIGGER) && defined(ULTRASOUND_1_ECHO)
+	/* Initialisation for standard trigger output pins */
+	ultrasoundConfig->triggerTag = IO_TAG(ULTRASOUND_1_TRIGGER);
+	ultrasoundConfig->echoTag = IO_TAG(ULTRASOUND_1_ECHO);
+#else
+#error Ultrasound is not defined
+#endif
 }
 
 static void ResetButtonModeSwitchConfig(button_t *buttonConfig)
@@ -461,7 +493,11 @@ void createDefaultConfig(master_t *config)
 	/* Initialise pwm encoder */
 	ResetPwmEncoderConfig(&config->pwmEncoderConfig);
 	config->pwmEncoderConfig.inputFilteringMode = INPUT_FILTERING_DISABLED;
-
+	
+	/* Initialise ultrasound */	
+	ResetUltrasoundConfig(&config->ultrasoundConfig);
+//	config->ultrasoundConfig.inputFilteringMode = INPUT_FILTERING_DISABLED;	
+	
 //	config->rxConfig.serialrx_provider = SERIALRX_SBUS;
 //	config->rxConfig.halfDuplex = 0;
 //	config->rxConfig.rx_spi_protocol = 0;			// TODO: 0 for now

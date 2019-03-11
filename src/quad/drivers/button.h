@@ -12,7 +12,7 @@ typedef struct buttonDev_s {
 }buttonDev_t;
 
 typedef struct button_s {
-	ioTag_t btnPin;					// PA15	
+	ioTag_t btnPin;					// PA15	for external button
 	buttonDev_t dev;
 }button_t;
 

@@ -71,4 +71,5 @@
 .\objects\config_eeprom.o: .\src\quad\flight\imu.h
 .\objects\config_eeprom.o: .\src\quad\drivers\OLED\oled.h
 .\objects\config_eeprom.o: .\src\quad\drivers\button.h
+.\objects\config_eeprom.o: .\src\quad\drivers\ultrasound_hcsr04.h
 .\objects\config_eeprom.o: src\quad\config\config_eeprom.h

@@ -23,7 +23,12 @@
 //#define PWM_TIMER_PERIOD		0xFFFFFFFF			// for PA0 button testing
 #define PWM_TIMER_PERIOD		0x10000				// 0x10000 = 65536
 
-static inputFilteringMode_e inputFilteringMode;
+static inputFilteringMode_e pwmInputFilteringMode;
+static inputFilteringMode_e encoderInputFilteringMode;
+static inputFilteringMode_e ultrasoundFilteringMode;
+
+static IO_t ultrasound1TriggerPin;
+static IO_t ultrasound2TriggerPin;
 
 typedef enum {
 	INPUT_MODE_PPM,
@@ -54,6 +59,7 @@ typedef struct {
 }pwmInputPort_t;
 
 static pwmInputPort_t pwmInputPorts[PWM_INPUT_PORT_COUNT];
+static pwmInputPort_t pwmUltrasoundPorts[PWM_ULTRASOUND_ECHO_PORT_COUNT];
 
 //static uint32_t captures[PWM_PORTS_OR_PPM_CAPTURE_COUNT];			// For STM32F407 Discovery, only TIM2 and TIM5 use 32-bit ARR register
 static uint16_t captures[PWM_PORTS_OR_PPM_CAPTURE_COUNT];
@@ -79,7 +85,7 @@ void pwmEncoderICConfig(TIM_TypeDef *tim, uint8_t channel, uint16_t polarity)
 	
 	TIM_ICInitStructure.TIM_ICPrescaler = TIM_ICPSC_DIV1;
 	
-	if (inputFilteringMode == INPUT_FILTERING_ENABLED) {
+	if (encoderInputFilteringMode == INPUT_FILTERING_ENABLED) {
 		TIM_ICInitStructure.TIM_ICFilter = INPUT_FILTER_TO_HELP_WITH_NOISE_FROM_OPENLRS_TELEMETRY_RX;
 	}else {
 		TIM_ICInitStructure.TIM_ICFilter = 0x00;
@@ -88,7 +94,7 @@ void pwmEncoderICConfig(TIM_TypeDef *tim, uint8_t channel, uint16_t polarity)
 	TIM_ICInit(tim, &TIM_ICInitStructure);
 }
 
-void pwmICConfig(TIM_TypeDef *tim, uint8_t channel, uint16_t polarity)
+void pwmICConfig(TIM_TypeDef *tim, uint8_t channel, uint16_t polarity, inputFilteringMode_e inputFilteringMode)
 {
 	TIM_ICInitTypeDef TIM_ICInitStructure;
 	
@@ -140,18 +146,18 @@ static void pwmEdgeCallback(timerCCHandlerRec_t *cbRec, timCCR_t capture)			// T
 #if 1
 	if (pwmInputPort->state == 0) {			// rising edge captured
 		pwmInputPort->rise = capture;
-//		printf("pwmInputPort->rise: %u, %s, %d\r\n", pwmInputPort->rise, __FUNCTION__, __LINE__);
+		printf("pwmInputPort->rise: %u, %s, %d\r\n", pwmInputPort->rise, __FUNCTION__, __LINE__);
 		pwmInputPort->state = 1;			// change state for falling edge capture
-		pwmICConfig(timerHardwarePtr->tim, timerHardwarePtr->channel, TIM_ICPolarity_Falling);
+		pwmICConfig(timerHardwarePtr->tim, timerHardwarePtr->channel, TIM_ICPolarity_Falling, INPUT_FILTERING_DISABLED);
 //		TIM_CAPTURE_STATUS = 0x0;			// clear capture status
 //		TIM_CAPTURE_STATUS |= 0x40;			// 0x40 = (1 << 6), falling edge is not captured
 	}else {									// falling edge captured
 		pwmInputPort->fall = capture;
-//		printf("pwmInputPort->fall: %u, %s, %d\r\n", pwmInputPort->fall, __FUNCTION__, __LINE__);
+		printf("pwmInputPort->fall: %u, %s, %d\r\n", pwmInputPort->fall, __FUNCTION__, __LINE__);
 		
 		/* compute and store capture */
 		pwmInputPort->capture = pwmInputPort->fall - pwmInputPort->rise;
-//		printf("pwmInputPort->capture: %u, %s, %d\r\n", pwmInputPort->capture, __FUNCTION__, __LINE__);		
+		printf("pwmInputPort->capture: %u, %s, %d\r\n", pwmInputPort->capture, __FUNCTION__, __LINE__);		
 //		printf("pwmInputPort->channel: %u, %s, %d\r\n", pwmInputPort->channel, __FUNCTION__, __LINE__);		
 		captures[pwmInputPort->channel] = pwmInputPort->capture;		// store the time difference (in us) between the falling and rising edges to captures array
 		
@@ -160,7 +166,7 @@ static void pwmEdgeCallback(timerCCHandlerRec_t *cbRec, timCCR_t capture)			// T
 		
 		/* switch state */
 		pwmInputPort->state = 0;			// change state for rising edge capture
-		pwmICConfig(timerHardwarePtr->tim, timerHardwarePtr->channel, TIM_ICPolarity_Rising);
+		pwmICConfig(timerHardwarePtr->tim, timerHardwarePtr->channel, TIM_ICPolarity_Rising, INPUT_FILTERING_DISABLED);
 		pwmInputPort->missedEvents = 0;
 	}
 #else
@@ -209,7 +215,7 @@ static void pwmOverflowCallback(timerOvrHandlerRec_t *cbRec, timCCR_t capture)		
 /* Initialise timer encoder interface mode configuration */
 void pwmEncoderInit(const pwmEncoderConfig_t *pwmEncoderConfig)
 {
-	inputFilteringMode = pwmEncoderConfig->inputFilteringMode;
+	encoderInputFilteringMode = pwmEncoderConfig->inputFilteringMode;
 	
 	for (int channel = 0; channel < PWM_ENCODER_INPUT_PORT_COUNT; channel++) {
 		
@@ -240,11 +246,73 @@ void pwmEncoderInit(const pwmEncoderConfig_t *pwmEncoderConfig)
 	}
 }
 
+/* Initialisation of ultrasound sensors */
+void ultrasoundTimerInit(ultrasoundTimerConfig_t *ultrasoundConfig)
+{
+	ultrasoundFilteringMode = ultrasoundConfig->inputFilteringMode;
+	
+	/* Initialisation of ultrasound trigger output pins */
+	ultrasound1TriggerPin = IOGetByTag(ultrasoundConfig->trigger1IOTag);
+	ultrasound2TriggerPin = IOGetByTag(ultrasoundConfig->trigger2IOTag);
+
+//	printf("IO_GPIO(trigger1): 0x%x\r\n", (uint32_t)IO_GPIO(ultrasound1TriggerPin));		// GPIOC: 0x40020800
+//	printf("IO_GPIO(trigger2): 0x%x\r\n", (uint32_t)IO_GPIO(ultrasound2TriggerPin));		// GPIOC: 0x40020800
+//	printf("IO_Pin(trigger1): %u\r\n", IO_Pin(trigger1));
+	
+	IOInit(ultrasound1TriggerPin, OWNER_TIMER_ULTRASOUND, 0);
+	IOInit(ultrasound2TriggerPin, OWNER_TIMER_ULTRASOUND, 1);
+
+	IOConfigGPIO(ultrasound1TriggerPin, IOCFG_OUT_PP);
+	IOConfigGPIO(ultrasound2TriggerPin, IOCFG_OUT_PP);
+
+//	printf("ioTags[0]: 0x%x\r\n", ultrasoundConfig->ioTags[0]);
+//	printf("ioTags[1]: 0x%x\r\n", ultrasoundConfig->ioTags[1]);
+	
+	/* Initialisation of ultrasound echo input pins */
+	for (int channel = 0; channel < PWM_ULTRASOUND_ECHO_PORT_COUNT; channel++) {
+		pwmInputPort_t *port = &pwmUltrasoundPorts[0];
+		
+		const timerHardware_t *timer = timerGetByTag(ultrasoundConfig->ioTags[channel], TIM_USE_PWM);
+		
+//		printf("timer: 0x%x\r\n", (uint32_t)timer->tim);
+		
+		if (!timer) {
+			continue;
+		}
+
+		port->state = 0;
+		port->missedEvents = 0;
+		port->channel = 0;
+		port->channel = channel;
+		port->mode = INPUT_MODE_PWM;
+		port->timerHardware = timer;
+		
+		/* IO configuration */
+		IO_t io = IOGetByTag(ultrasoundConfig->ioTags[0]);
+		
+		IOInit(io, OWNER_TIMER_ULTRASOUND, RESOURCE_INDEX(channel) + 1);		// channel starts from 0, RESOURCE_INDEX(0) = 0 + 1 = 1
+		
+		IOConfigGPIOAF(IOGetByTag(timer->tag), IOCFG_AF_PP_PD, timer->alternateFunction);
+
+		/* PWM Input Capture configuration */
+//		printf("channel: 0x%x\r\n", timer->channel);
+		pwmICConfig(timer->tim, timer->channel, TIM_ICPolarity_Rising, pwmInputFilteringMode);
+
+		/* Timer configuration, 1 MHz counting frequency (PWM_TIMER_MHZ = 1 MHz) */
+		timerConfigure(timer, (uint16_t)PWM_TIMER_PERIOD, PWM_TIMER_MHZ);
+		
+		/* Timer CC/Overflow callback configuration */
+		timerChCCHandlerInit(&port->edgeCb, pwmEdgeCallback);
+		timerChOvrHandlerInit(&port->overflowCb, pwmOverflowCallback);
+		timerChConfigCallbacks(timer, &port->edgeCb, &port->overflowCb);
+	}
+}
+
 void pwmRxInit(const pwmConfig_t *pwmConfig)
 {
 #if 1
 //	printf("%s, %d\r\n", __FUNCTION__, __LINE__);
-	inputFilteringMode = pwmConfig->inputFilteringMode;
+	pwmInputFilteringMode = pwmConfig->inputFilteringMode;
 	
 	for (int channel = 0; channel < PWM_INPUT_PORT_COUNT; channel++) {
 		pwmInputPort_t *port = &pwmInputPorts[channel];
@@ -287,7 +355,7 @@ void pwmRxInit(const pwmConfig_t *pwmConfig)
 		IOConfigGPIOAF(IOGetByTag(timer->tag), IOCFG_AF_PP_PD, timer->alternateFunction);
 
 		/* PWM Input Capture configuration */
-		pwmICConfig(timer->tim, timer->channel, TIM_ICPolarity_Rising);
+		pwmICConfig(timer->tim, timer->channel, TIM_ICPolarity_Rising, pwmInputFilteringMode);
 		
 		/* Timer configuration */
 //		timerConfigure4UserBtn(timer, PWM_TIMER_PERIOD, PWM_TIMER_MHZ);
@@ -356,7 +424,7 @@ void pwmRxInit(const pwmConfig_t *pwmConfig)
 #endif
 }
 
-#if 1
+#if 0
 uint16_t pwmRead(uint8_t channel)
 {
 //	printf("%s, %d\r\n", __FUNCTION__, __LINE__);
@@ -381,4 +449,3 @@ bool isPWMDataBeingReceived(void)
 	
 	return false;
 }
-

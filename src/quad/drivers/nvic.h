@@ -22,7 +22,7 @@
 #define NVIC_PRIO_MAX                      NVIC_BUILD_PRIORITY(0, 1)			// 0x10 = 16
 #define NVIC_PRIO_TIMER                    NVIC_BUILD_PRIORITY(1, 1)			// 0x50	= 80
 #define NVIC_PRIO_BARO_EXTI                NVIC_BUILD_PRIORITY(0x0f, 0x0f)		// 0xF0 = 240
-#define NVIC_PRIO_SONAR_EXTI               NVIC_BUILD_PRIORITY(2, 0)  // maybe increase slightly
+#define NVIC_PRIO_ULTRASOUND_EXTI          NVIC_BUILD_PRIORITY(2, 0)  // maybe increase slightly
 #define NVIC_PRIO_TRANSPONDER_DMA          NVIC_BUILD_PRIORITY(3, 0)
 #define NVIC_PRIO_MPU_INT_EXTI             NVIC_BUILD_PRIORITY(0x0f, 0x0f)
 #define NVIC_PRIO_MAG_INT_EXTI             NVIC_BUILD_PRIORITY(0x0f, 0x0f)
@@ -55,7 +55,7 @@
 #define NVIC_PRIO_I2C_EV                   NVIC_BUILD_PRIORITY(0, 0)
 #define NVIC_PRIO_USB                      NVIC_BUILD_PRIORITY(2, 0)
 #define NVIC_PRIO_USB_WUP                  NVIC_BUILD_PRIORITY(1, 0)
-#define NVIC_PRIO_SONAR_ECHO               NVIC_BUILD_PRIORITY(0x0f, 0x0f)
+#define NVIC_PRIO_ULTRASOUND_ECHO          NVIC_BUILD_PRIORITY(0x0f, 0x0f)
 #define NVIC_PRIO_MPU_DATA_READY           NVIC_BUILD_PRIORITY(0x0f, 0x0f)
 #define NVIC_PRIO_MAG_DATA_READY           NVIC_BUILD_PRIORITY(0x0f, 0x0f)
 #define NVIC_PRIO_CALLBACK                 NVIC_BUILD_PRIORITY(0x0f, 0x0f)

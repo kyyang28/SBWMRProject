@@ -263,12 +263,31 @@ static void ResetUltrasoundTimerConfig(ultrasoundTimerConfig_t *ultrasoundTimerC
 
 static void ResetUltrasoundConfig(ultrasoundConfig_t *ultrasoundConfig)
 {
+/* ULTRASOUND_1_TRIGGER = PC8, ULTRASOUND_1_ECHO = PC9 */
 #if defined(ULTRASOUND_1_TRIGGER) && defined(ULTRASOUND_1_ECHO)
-	/* Initialisation for standard trigger output pins */
-	ultrasoundConfig->triggerTag = IO_TAG(ULTRASOUND_1_TRIGGER);
-	ultrasoundConfig->echoTag = IO_TAG(ULTRASOUND_1_ECHO);
+	/* Initialisation of ultrasound 1 */
+	ultrasoundConfig->triggerTag[0] = IO_TAG(ULTRASOUND_1_TRIGGER);
+	ultrasoundConfig->echoTag[0] = IO_TAG(ULTRASOUND_1_ECHO);
 #else
-#error Ultrasound is not defined
+#error Ultrasound1 is not defined
+#endif
+
+/* ULTRASOUND_2_TRIGGER = PC10, ULTRASOUND_2_ECHO = PC11 */
+#if defined(ULTRASOUND_2_TRIGGER) && defined(ULTRASOUND_2_ECHO)	
+	/* Initialisation of ultrasound 2 */
+	ultrasoundConfig->triggerTag[1] = IO_TAG(ULTRASOUND_2_TRIGGER);
+	ultrasoundConfig->echoTag[1] = IO_TAG(ULTRASOUND_2_ECHO);
+#else
+#error Ultrasound2 is not defined
+#endif
+
+/* ULTRASOUND_3_TRIGGER = PC12, ULTRASOUND_3_ECHO = PD0 */
+#if defined(ULTRASOUND_3_TRIGGER) && defined(ULTRASOUND_3_ECHO)
+	/* Initialisation of ultrasound 3 */
+	ultrasoundConfig->triggerTag[2] = IO_TAG(ULTRASOUND_3_TRIGGER);
+	ultrasoundConfig->echoTag[2] = IO_TAG(ULTRASOUND_3_ECHO);
+#else
+#error Ultrasound3 is not defined
 #endif
 }
 

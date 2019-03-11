@@ -47,12 +47,18 @@ extern uint8_t driveForward, driveReverse, turnLeft, turnRight;
 bool stopFlag = true;
 bool isCollisionAvoidanceModeActivated = false;			// collision avoidance is switched off by default
 
+static int32_t ultrasound1DistanceData = ULTRASOUND_OUT_OF_RANGE;
+static int32_t ultrasound2DistanceData = ULTRASOUND_OUT_OF_RANGE;
+static int32_t ultrasound3DistanceData = ULTRASOUND_OUT_OF_RANGE;
+
 //static void taskUpdateRxMain(timeUs_t currentTimeUs);
 static void taskUpdateAccelerometer(timeUs_t currentTimeUs);
 static void taskMotorEncoder(timeUs_t currentTimeUs);
 static void taskUpdateGyro(timeUs_t currentTimeUs);
 static void taskOLEDDisplay(timeUs_t currentTimeUs);
-static void taskUltrasoundReadData(timeUs_t currentTimeUs);
+static void taskUltrasound1ReadData(timeUs_t currentTimeUs);
+static void taskUltrasound2ReadData(timeUs_t currentTimeUs);
+static void taskUltrasound3ReadData(timeUs_t currentTimeUs);
 //static void taskBluetoothReceive(timeUs_t currentTimeUs);
 
 /* Tasks initialisation */
@@ -101,16 +107,42 @@ cfTask_t cfTasks[TASK_COUNT] = {
 	},
 
 #if defined(ULTRASOUND)	
-	[TASK_ULTRASOUND_UPDATE] = {
-		.taskName = "ULTRASOUND_UPDATE",
-		.taskFunc = ultrasoundUpdate,
+	[TASK_ULTRASOUND1_UPDATE] = {
+		.taskName = "ULTRASOUND1_UPDATE",
+		.taskFunc = ultrasound1Update,
 		.desiredPeriod = TASK_PERIOD_MS(70),				// 70 ms * 1000 = 70000 us, 70 ms required so that ultrasound pulses do not interference with each other
 		.staticPriority = TASK_PRIORITY_MEDIUM,				// TASK_PRIORITY_MEDIUM = 1
 	},
 	
-	[TASK_ULTRASOUND_READDATA] = {
-		.taskName = "ULTRASOUND_READDATA",
-		.taskFunc = taskUltrasoundReadData,
+	[TASK_ULTRASOUND1_READDATA] = {
+		.taskName = "ULTRASOUND1_READDATA",
+		.taskFunc = taskUltrasound1ReadData,
+		.desiredPeriod = TASK_PERIOD_HZ(40),				// 1000000 / 40 = 25000 us = 25 ms = 40 Hz from HCSR-04 datasheet
+		.staticPriority = TASK_PRIORITY_MEDIUM,				// TASK_PRIORITY_MEDIUM = 1
+	},
+	[TASK_ULTRASOUND2_UPDATE] = {
+		.taskName = "ULTRASOUND2_UPDATE",
+		.taskFunc = ultrasound2Update,
+		.desiredPeriod = TASK_PERIOD_MS(70),				// 70 ms * 1000 = 70000 us, 70 ms required so that ultrasound pulses do not interference with each other
+		.staticPriority = TASK_PRIORITY_MEDIUM,				// TASK_PRIORITY_MEDIUM = 1
+	},
+	
+	[TASK_ULTRASOUND2_READDATA] = {
+		.taskName = "ULTRASOUND2_READDATA",
+		.taskFunc = taskUltrasound2ReadData,
+		.desiredPeriod = TASK_PERIOD_HZ(40),				// 1000000 / 40 = 25000 us = 25 ms = 40 Hz from HCSR-04 datasheet
+		.staticPriority = TASK_PRIORITY_MEDIUM,				// TASK_PRIORITY_MEDIUM = 1
+	},
+	
+	[TASK_ULTRASOUND3_UPDATE] = {
+		.taskName = "ULTRASOUND3_UPDATE",
+		.taskFunc = ultrasound3Update,
+		.desiredPeriod = TASK_PERIOD_MS(70),				// 70 ms * 1000 = 70000 us, 70 ms required so that ultrasound pulses do not interference with each other
+		.staticPriority = TASK_PRIORITY_MEDIUM,				// TASK_PRIORITY_MEDIUM = 1
+	},
+	[TASK_ULTRASOUND3_READDATA] = {
+		.taskName = "ULTRASOUND3_READDATA",
+		.taskFunc = taskUltrasound3ReadData,
 		.desiredPeriod = TASK_PERIOD_HZ(40),				// 1000000 / 40 = 25000 us = 25 ms = 40 Hz from HCSR-04 datasheet
 		.staticPriority = TASK_PRIORITY_MEDIUM,				// TASK_PRIORITY_MEDIUM = 1
 	},
@@ -729,13 +761,25 @@ static void taskMotorEncoder(timeUs_t currentTimeUs)
 //	printf("Motor2 pwm: %d\r\n", PWMMotor2);
 }
 
-static void taskUltrasoundReadData(timeUs_t currentTimeUs)
-{
-	int32_t ultrasoundDistanceData = ULTRASOUND_OUT_OF_RANGE;
+static void taskUltrasound1ReadData(timeUs_t currentTimeUs)
+{	
+	ultrasound1DistanceData = ultrasound1Read();
 	
-	ultrasoundDistanceData = ultrasoundRead();
+//	printf("d1: %d\r\n", ultrasound1DistanceData);
+}
+
+static void taskUltrasound2ReadData(timeUs_t currentTimeUs)
+{	
+	ultrasound2DistanceData = ultrasound2Read();
 	
-//	printf("ultrasoundDistanceData: %d\r\n", ultrasoundDistanceData);
+//	printf("d2: %d\r\n", ultrasound2DistanceData);
+}
+
+static void taskUltrasound3ReadData(timeUs_t currentTimeUs)
+{	
+	ultrasound3DistanceData = ultrasound3Read();
+	
+//	printf("d3: %d\r\n", ultrasound3DistanceData);
 }
 
 static void taskOLEDDisplay(timeUs_t currentTimeUs)
@@ -748,75 +792,92 @@ static void taskOLEDDisplay(timeUs_t currentTimeUs)
 //	OLED_ShowString(0, 0, "M: ");
 	
 	if (isCollisionAvoidanceModeActivated == true) {
-		OLED_ShowString(0, 0, "Colli Avoidance");
+		OLED_ShowString(0, 0, "  OA   ");
 		switchFromOADisplayFlag = true;
 	} else {
 //		printf("flag: %d\r\n", switchFromOADisplayFlag);
 		if (switchFromOADisplayFlag == true) {
-			OLED_ShowString(0, 0, "     ");
-			OLED_ShowString(80, 0, "     ");
+//			OLED_ShowString(30, 0, "      ");
+//			OLED_ShowString(80, 0, "     ");
 			switchFromOADisplayFlag = false;
 		} else {
-			OLED_ShowString(40, 0, "Normal");
+			OLED_ShowString(00, 0, " Normal");
 		}
 	}
 	
 	/* +------------------- Display temperature value -------------------+ */
 //	printf("temp: %.4f\r\n", temperatureData);
-	OLED_ShowString(00, 20, "Temp: ");
-	OLED_ShowNumber(46, 20, (int)temperatureData, 2, 12);		// display temperature integer part
-	OLED_ShowString(59, 20, ".");
-	OLED_ShowNumber(68, 20, (int)((round(temperatureData * 100) / 100 - (int)temperatureData) * 100), 2, 12);		// display temperature integer part
-	OLED_ShowString(85, 20, "`C");
+//	OLED_ShowString(00, 10, "Temp: ");
+//	OLED_ShowNumber(46, 10, (int)temperatureData, 2, 12);		// display temperature integer part
+//	OLED_ShowString(59, 10, ".");
+//	OLED_ShowNumber(68, 10, (int)((round(temperatureData * 100) / 100 - (int)temperatureData) * 100), 2, 12);		// display temperature integer part
+//	OLED_ShowString(85, 10, "`C");
+
+//	OLED_ShowString(00, 00, "T: ");
+	OLED_ShowNumber(66, 00, (int)temperatureData, 2, 12);		// display temperature integer part
+	OLED_ShowString(79, 00, ".");
+	OLED_ShowNumber(88, 00, (int)((round(temperatureData * 100) / 100 - (int)temperatureData) * 100), 2, 12);		// display temperature integer part
+	OLED_ShowString(105, 00, "`C");
 	
 	/* +------------------- Display encoder1 (left encoder) value -------------------+ */
-	OLED_ShowString(00, 30, "LeftEnco: ");
+	OLED_ShowString(00, 10, "LeftEnco: ");
 	
 	if (Encoder1 < 0) {
-		OLED_ShowString(80, 30, "-");
-		OLED_ShowNumber(95, 30, -Encoder1, 3, 12);
+		OLED_ShowString(80, 10, "-");
+		OLED_ShowNumber(95, 10, -Encoder1, 3, 12);
 	} else {
-		OLED_ShowString(80, 30, "+");
-		OLED_ShowNumber(95, 30, Encoder1, 3, 12);
+		OLED_ShowString(80, 10, "+");
+		OLED_ShowNumber(95, 10, Encoder1, 3, 12);
 	}
 	
 	/* +------------------- Display encoder2 (right encoder) value -------------------+ */
-	OLED_ShowString(00, 40, "RightEnco: ");
+	OLED_ShowString(00, 20, "RightEnco: ");
 	
 	if (Encoder2 < 0) {
-		OLED_ShowString(80, 40, "-");
-		OLED_ShowNumber(95, 40, -Encoder2, 3, 12);
+		OLED_ShowString(80, 20, "-");
+		OLED_ShowNumber(95, 20, -Encoder2, 3, 12);
 	} else {
-		OLED_ShowString(80, 40, "+");
-		OLED_ShowNumber(95, 40, Encoder2, 3, 12);
+		OLED_ShowString(80, 20, "+");
+		OLED_ShowNumber(95, 20, Encoder2, 3, 12);
 	}
 
 	/* +---------------------------- Display Pitch angle -----------------------------+ */
-	OLED_ShowString(0, 50, "P/Y: ");
+	OLED_ShowString(0, 30, "P/Y: ");
 	
 	/* Display Euler Pitch angle */
 	if (attitude.raw[Y] < 0) {
-		OLED_ShowString(40, 50, "-");
-		OLED_ShowNumber(45, 50, -attitude.raw[Y], 3, 12);
-//		OLED_ShowString(80, 50, "-");
-//		OLED_ShowNumber(95, 50, -attitude.raw[Y], 3, 12);
-//		OLED_ShowNumber(45, 50, attitude.raw[Y] + 360, 3, 12);
+		OLED_ShowString(40, 30, "-");
+		OLED_ShowNumber(45, 30, -attitude.raw[Y], 3, 12);
+//		OLED_ShowString(80, 30, "-");
+//		OLED_ShowNumber(95, 30, -attitude.raw[Y], 3, 12);
+//		OLED_ShowNumber(45, 30, attitude.raw[Y] + 360, 3, 12);
 	} else {
-		OLED_ShowString(40, 50, "+");
-		OLED_ShowNumber(45, 50, attitude.raw[Y], 3, 12);		
-//		OLED_ShowString(80, 50, "+");
-//		OLED_ShowNumber(95, 50, attitude.raw[Y], 3, 12);		
-//		OLED_ShowNumber(45, 50, attitude.raw[Y], 3, 12);
+		OLED_ShowString(40, 30, "+");
+		OLED_ShowNumber(45, 30, attitude.raw[Y], 3, 12);		
+//		OLED_ShowString(80, 30, "+");
+//		OLED_ShowNumber(95, 30, attitude.raw[Y], 3, 12);		
+//		OLED_ShowNumber(45, 30, attitude.raw[Y], 3, 12);
 	}
 
 	/* Display Euler Yaw angle */
 	if (attitude.raw[Z] < 0) {
-//		OLED_ShowString(80, 50, "-");
-		OLED_ShowNumber(85, 50, attitude.raw[Z] + 360, 3, 12);
+//		OLED_ShowString(80, 30, "-");
+		OLED_ShowNumber(85, 30, attitude.raw[Z] + 360, 3, 12);
 	} else {
-//		OLED_ShowString(80, 50, "+");
-		OLED_ShowNumber(85, 50, attitude.raw[Z], 3, 12);		
+//		OLED_ShowString(80, 30, "+");
+		OLED_ShowNumber(85, 30, attitude.raw[Z], 3, 12);		
 	}
+	
+	/* +---------------------------- Display ultrasound data -----------------------------+ */
+//	if (ultrasound1DistanceData < 0) {
+//		OLED_ShowString(00, 50, "-");
+//	} else {
+//		OLED_ShowString(00, 50, "");
+//	}
+	
+	OLED_ShowNumber(10, 40, ultrasound1DistanceData, 3, 12);
+	OLED_ShowNumber(55, 40, ultrasound2DistanceData, 3, 12);
+	OLED_ShowNumber(95, 40, ultrasound3DistanceData, 3, 12);
 	
 	OLED_Refresh_Gram();
 }
@@ -846,10 +907,22 @@ void fcTasksInit(void)
 
 	/* Enable OLED display TASK */
 	setTaskEnabled(TASK_OLEDDISPLAY, true);
-	
-	/* Enable ultrasound update TASK (Repeated sending startup sequence) */
-	setTaskEnabled(TASK_ULTRASOUND_UPDATE, true);
 
-	/* Enable ultrasound data collection TASK */
-	setTaskEnabled(TASK_ULTRASOUND_READDATA, true);
+	/* Enable ultrasound1 update TASK (Repeated sending startup sequence) */
+	setTaskEnabled(TASK_ULTRASOUND1_UPDATE, true);
+
+	/* Enable ultrasound1 data collection TASK */
+	setTaskEnabled(TASK_ULTRASOUND1_READDATA, true);
+	
+	/* Enable ultrasound2 update TASK (Repeated sending startup sequence) */
+	setTaskEnabled(TASK_ULTRASOUND2_UPDATE, true);
+
+	/* Enable ultrasound2 data collection TASK */
+	setTaskEnabled(TASK_ULTRASOUND2_READDATA, true);
+
+	/* Enable ultrasound3 update TASK (Repeated sending startup sequence) */
+	setTaskEnabled(TASK_ULTRASOUND3_UPDATE, true);
+
+	/* Enable ultrasound3 data collection TASK */
+	setTaskEnabled(TASK_ULTRASOUND3_READDATA, true);
 }

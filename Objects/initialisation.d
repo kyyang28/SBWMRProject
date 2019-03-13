@@ -50,3 +50,6 @@
 .\objects\initialisation.o: src\quad\sensors\barometer.h
 .\objects\initialisation.o: src\quad\sensors\compass.h
 .\objects\initialisation.o: .\src\quad\drivers\compassDev.h
+.\objects\initialisation.o: .\src\quad\drivers\ultrasound_hcsr04.h
+.\objects\initialisation.o: .\src\quad\fc\runtime_config.h
+.\objects\initialisation.o: src\quad\sensors\ultrasound.h

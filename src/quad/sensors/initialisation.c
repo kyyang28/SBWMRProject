@@ -1,15 +1,29 @@
 
 #include <stdio.h>
 
-#include "initialisation.h"		// includes gyro.h, acceleration.h, barometer.h, compass.h
+#include "initialisation.h"		// includes gyro.h, acceleration.h, barometer.h, compass.h, ultrasound_hcsr04.h
 //#include "gyro.h"
 //#include "acceleration.h"
 #include "sensors.h"
 #include "target.h"
+#include "runtime_config.h"
+#include "ultrasound.h"
 
 uint8_t detectedSensors[SENSOR_INDEX_COUNT] = { GYRO_NONE, ACC_NONE, BARO_NONE, MAG_NONE };
 
-bool sensorsAutodetect(const gyroConfig_t *gyroConfig, const accelerometerConfig_t *accelerometerConfig)
+#ifdef ULTRASOUND
+static bool ultrasoundDetect(void)
+{
+	if (feature(FEATURE_ULTRASOUND)) {
+		sensorSet(SENSOR_ULTRASOUND);
+		return true;
+	}
+	
+	return false;
+}
+#endif
+
+bool sensorsAutodetect(const gyroConfig_t *gyroConfig, const accelerometerConfig_t *accelerometerConfig, const ultrasoundConfig_t *ultrasoundConfig)
 {
 	/* gyro must be initialised before accelerometer */
 	if (!gyroInit(gyroConfig)) {
@@ -22,6 +36,8 @@ bool sensorsAutodetect(const gyroConfig_t *gyroConfig, const accelerometerConfig
 #endif
 	
 //	printf("gyro.taragetLooptime: %u\r\n", gyro.targetLooptime);
+	
+	/* Accelerometer initialisation */
 	accInit(accelerometerConfig, gyro.targetLooptime);		// gyro.targetLooptime = 1000 us for F450 quad, gyro.targetLooptime = 125 us for F210 quad
 	
 	if (gyroConfig->gyro_align != ALIGN_DEFAULT) {
@@ -35,6 +51,13 @@ bool sensorsAutodetect(const gyroConfig_t *gyroConfig, const accelerometerConfig
 //    if (compassConfig->mag_align != ALIGN_DEFAULT) {
 //        mag.dev.magAlign = compassConfig->mag_align;
 //    }
+	
+	/* Ultrasound initialisation */
+#ifdef ULTRASOUND
+	if (ultrasoundDetect()) {
+		ultrasoundInit(ultrasoundConfig);
+	}
+#endif	
 	
 	return true;
 }

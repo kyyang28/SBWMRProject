@@ -93,4 +93,3 @@
 .\objects\main.o: .\src\quad\scheduler\scheduler.h
 .\objects\main.o: F:\Keil_v5\ARM\ARMCC\Bin\..\include\string.h
 .\objects\main.o: .\src\quad\fc\runtime_config.h
-.\objects\main.o: .\src\quad\sensors\ultrasound.h

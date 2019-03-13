@@ -289,6 +289,33 @@ static void ResetUltrasoundConfig(ultrasoundConfig_t *ultrasoundConfig)
 #else
 #error Ultrasound3 is not defined
 #endif
+
+/* ULTRASOUND_4_TRIGGER = PD1, ULTRASOUND_4_ECHO = PD2 */
+#if defined(ULTRASOUND_4_TRIGGER) && defined(ULTRASOUND_4_ECHO)
+	/* Initialisation of ultrasound 4 */
+	ultrasoundConfig->triggerTag[3] = IO_TAG(ULTRASOUND_4_TRIGGER);
+	ultrasoundConfig->echoTag[3] = IO_TAG(ULTRASOUND_4_ECHO);
+#else
+#error Ultrasound4 is not defined
+#endif
+
+/* ULTRASOUND_5_TRIGGER = PD3, ULTRASOUND_5_ECHO = PD3 */
+#if defined(ULTRASOUND_5_TRIGGER) && defined(ULTRASOUND_5_ECHO)
+	/* Initialisation of ultrasound 5 */
+	ultrasoundConfig->triggerTag[4] = IO_TAG(ULTRASOUND_5_TRIGGER);
+	ultrasoundConfig->echoTag[4] = IO_TAG(ULTRASOUND_5_ECHO);
+#else
+#error Ultrasound5 is not defined
+#endif
+
+/* ULTRASOUND_6_TRIGGER = PD6, ULTRASOUND_6_ECHO = PD7 */
+#if defined(ULTRASOUND_6_TRIGGER) && defined(ULTRASOUND_6_ECHO)
+	/* Initialisation of ultrasound 6 */
+	ultrasoundConfig->triggerTag[5] = IO_TAG(ULTRASOUND_6_TRIGGER);
+	ultrasoundConfig->echoTag[5] = IO_TAG(ULTRASOUND_6_ECHO);
+#else
+#error Ultrasound6 is not defined
+#endif
 }
 
 static void ResetButtonModeSwitchConfig(button_t *buttonConfig)

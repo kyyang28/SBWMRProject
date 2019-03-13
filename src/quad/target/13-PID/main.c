@@ -61,7 +61,7 @@
 #include "runtime_config.h"
 #include "imu.h"
 #include "oled.h"
-#include "ultrasound.h"
+//#include "ultrasound.h"
 
 
 typedef enum {
@@ -114,16 +114,6 @@ PUTCHAR_PROTOTYPE
 void main_process(void)
 {
     scheduler();
-}
-
-static bool ultrasoundDetect(void)
-{
-	if (feature(FEATURE_ULTRASOUND)) {
-		sensorSet(SENSOR_ULTRASOUND);
-		return true;
-	}
-	
-	return false;
 }
 
 int main(void)
@@ -196,14 +186,7 @@ int main(void)
 
 	/* Initialise Timer Encoder Interface Mode for Incremental Encoders attached on DC Brushed Motors */
 	pwmEncoderInit(PwmEncoderConfig());
-	
-	/* Ultrasound timer initialisation */
-#ifdef ULTRASOUND
-	if (ultrasoundDetect()) {
-		ultrasoundInit(UltrasoundConfig());				// from rx_pwm.c	ultrasound timer init
-	}
-#endif
-	
+		
 #ifdef USE_SPI			// USE_SPI is defined in target.h
 	#ifdef USE_SPI_DEVICE_1
 //		printf("%s, %d\r\n", __FUNCTION__, __LINE__);
@@ -229,8 +212,8 @@ int main(void)
 	}
 #endif
 
-#if defined(USE_IMU)			// USE_IMU is defined in target.h
-	if (!sensorsAutodetect(GyroConfig(), AccelerometerConfig())) {
+//#if defined(USE_IMU)			// USE_IMU is defined in target.h
+	if (!sensorsAutodetect(GyroConfig(), AccelerometerConfig(), UltrasoundConfig())) {
 		//failureMode();
 //		printf("Failed to initialise IMU!, %s, %d\r\n", __FUNCTION__, __LINE__);
 		while (1) {
@@ -241,7 +224,7 @@ int main(void)
 			delay(100);
 		}
 	}
-#endif
+//#endif
 	
 	systemState |= SYSTEM_STATE_SENSORS_READY;
 	
@@ -254,6 +237,9 @@ int main(void)
 #if defined(USE_IMU)
 	/* set gyro calibration cycles */
 	gyroSetCalibrationCycles();
+	
+	/* set accelerometer calibration cycles */
+	accSetCalibrationCycles(CALIBRATING_ACC_CYCLES);
 #endif
 	
 	/* Latch active features again as some of them are modified by init() */

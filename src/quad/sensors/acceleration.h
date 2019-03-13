@@ -48,6 +48,7 @@ bool accInit(const accelerometerConfig_t *accelerometerConfig, uint32_t gyroSamp
 void accUpdate(timeUs_t currentTimeUs, rollAndPitchTrims_t *rollAndPitchTrims);
 bool isAccelerationCalibrationComplete(void);
 
+void accSetCalibrationCycles(uint16_t requiredCalibrationCycles);
 void ResetRollAndPitchTrims(rollAndPitchTrims_t *rollAndPitchTrims);
 void setAccelerationTrims(flightDynamicsTrims_t *accelerationTrimsToUse);
 void setAccelerationFilter(uint16_t initialAccLpfCutHz);

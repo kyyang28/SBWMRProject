@@ -50,6 +50,9 @@ bool isCollisionAvoidanceModeActivated = false;			// collision avoidance is swit
 static int32_t ultrasound1DistanceData = ULTRASOUND_OUT_OF_RANGE;
 static int32_t ultrasound2DistanceData = ULTRASOUND_OUT_OF_RANGE;
 static int32_t ultrasound3DistanceData = ULTRASOUND_OUT_OF_RANGE;
+static int32_t ultrasound4DistanceData = ULTRASOUND_OUT_OF_RANGE;
+static int32_t ultrasound5DistanceData = ULTRASOUND_OUT_OF_RANGE;
+static int32_t ultrasound6DistanceData = ULTRASOUND_OUT_OF_RANGE;
 
 //static void taskUpdateRxMain(timeUs_t currentTimeUs);
 static void taskUpdateAccelerometer(timeUs_t currentTimeUs);
@@ -59,6 +62,9 @@ static void taskOLEDDisplay(timeUs_t currentTimeUs);
 static void taskUltrasound1ReadData(timeUs_t currentTimeUs);
 static void taskUltrasound2ReadData(timeUs_t currentTimeUs);
 static void taskUltrasound3ReadData(timeUs_t currentTimeUs);
+static void taskUltrasound4ReadData(timeUs_t currentTimeUs);
+static void taskUltrasound5ReadData(timeUs_t currentTimeUs);
+static void taskUltrasound6ReadData(timeUs_t currentTimeUs);
 //static void taskBluetoothReceive(timeUs_t currentTimeUs);
 
 /* Tasks initialisation */
@@ -143,6 +149,45 @@ cfTask_t cfTasks[TASK_COUNT] = {
 	[TASK_ULTRASOUND3_READDATA] = {
 		.taskName = "ULTRASOUND3_READDATA",
 		.taskFunc = taskUltrasound3ReadData,
+		.desiredPeriod = TASK_PERIOD_HZ(40),				// 1000000 / 40 = 25000 us = 25 ms = 40 Hz from HCSR-04 datasheet
+		.staticPriority = TASK_PRIORITY_MEDIUM,				// TASK_PRIORITY_MEDIUM = 1
+	},
+
+	[TASK_ULTRASOUND4_UPDATE] = {
+		.taskName = "ULTRASOUND4_UPDATE",
+		.taskFunc = ultrasound4Update,
+		.desiredPeriod = TASK_PERIOD_MS(70),				// 70 ms * 1000 = 70000 us, 70 ms required so that ultrasound pulses do not interference with each other
+		.staticPriority = TASK_PRIORITY_MEDIUM,				// TASK_PRIORITY_MEDIUM = 1
+	},
+	[TASK_ULTRASOUND4_READDATA] = {
+		.taskName = "ULTRASOUND4_READDATA",
+		.taskFunc = taskUltrasound4ReadData,
+		.desiredPeriod = TASK_PERIOD_HZ(40),				// 1000000 / 40 = 25000 us = 25 ms = 40 Hz from HCSR-04 datasheet
+		.staticPriority = TASK_PRIORITY_MEDIUM,				// TASK_PRIORITY_MEDIUM = 1
+	},
+	
+	[TASK_ULTRASOUND5_UPDATE] = {
+		.taskName = "ULTRASOUND5_UPDATE",
+		.taskFunc = ultrasound5Update,
+		.desiredPeriod = TASK_PERIOD_MS(70),				// 70 ms * 1000 = 70000 us, 70 ms required so that ultrasound pulses do not interference with each other
+		.staticPriority = TASK_PRIORITY_MEDIUM,				// TASK_PRIORITY_MEDIUM = 1
+	},
+	[TASK_ULTRASOUND5_READDATA] = {
+		.taskName = "ULTRASOUND5_READDATA",
+		.taskFunc = taskUltrasound5ReadData,
+		.desiredPeriod = TASK_PERIOD_HZ(40),				// 1000000 / 40 = 25000 us = 25 ms = 40 Hz from HCSR-04 datasheet
+		.staticPriority = TASK_PRIORITY_MEDIUM,				// TASK_PRIORITY_MEDIUM = 1
+	},
+
+	[TASK_ULTRASOUND6_UPDATE] = {
+		.taskName = "ULTRASOUND6_UPDATE",
+		.taskFunc = ultrasound6Update,
+		.desiredPeriod = TASK_PERIOD_MS(70),				// 70 ms * 1000 = 70000 us, 70 ms required so that ultrasound pulses do not interference with each other
+		.staticPriority = TASK_PRIORITY_MEDIUM,				// TASK_PRIORITY_MEDIUM = 1
+	},
+	[TASK_ULTRASOUND6_READDATA] = {
+		.taskName = "ULTRASOUND6_READDATA",
+		.taskFunc = taskUltrasound6ReadData,
 		.desiredPeriod = TASK_PERIOD_HZ(40),				// 1000000 / 40 = 25000 us = 25 ms = 40 Hz from HCSR-04 datasheet
 		.staticPriority = TASK_PRIORITY_MEDIUM,				// TASK_PRIORITY_MEDIUM = 1
 	},
@@ -782,6 +827,27 @@ static void taskUltrasound3ReadData(timeUs_t currentTimeUs)
 //	printf("d3: %d\r\n", ultrasound3DistanceData);
 }
 
+static void taskUltrasound4ReadData(timeUs_t currentTimeUs)
+{	
+	ultrasound4DistanceData = ultrasound4Read();
+	
+//	printf("d4: %d\r\n", ultrasound4DistanceData);
+}
+
+static void taskUltrasound5ReadData(timeUs_t currentTimeUs)
+{	
+	ultrasound5DistanceData = ultrasound5Read();
+	
+//	printf("d5: %d\r\n", ultrasound5DistanceData);
+}
+
+static void taskUltrasound6ReadData(timeUs_t currentTimeUs)
+{	
+	ultrasound6DistanceData = ultrasound6Read();
+	
+//	printf("d6: %d\r\n", ultrasound6DistanceData);
+}
+
 static void taskOLEDDisplay(timeUs_t currentTimeUs)
 {
 	static bool switchFromOADisplayFlag = false;
@@ -875,10 +941,24 @@ static void taskOLEDDisplay(timeUs_t currentTimeUs)
 //		OLED_ShowString(00, 50, "");
 //	}
 	
+	/* Display ultrasound sensor data 1 */
 	OLED_ShowNumber(10, 40, ultrasound1DistanceData, 3, 12);
+
+	/* Display ultrasound sensor data 2 */
 	OLED_ShowNumber(55, 40, ultrasound2DistanceData, 3, 12);
+
+	/* Display ultrasound sensor data 3 */
 	OLED_ShowNumber(95, 40, ultrasound3DistanceData, 3, 12);
-	
+
+	/* Display ultrasound sensor data 4 */
+	OLED_ShowNumber(10, 50, ultrasound4DistanceData, 3, 12);
+
+	/* Display ultrasound sensor data 5 */
+	OLED_ShowNumber(55, 50, ultrasound5DistanceData, 3, 12);
+
+	/* Display ultrasound sensor data 6 */
+	OLED_ShowNumber(95, 50, ultrasound6DistanceData, 3, 12);
+
 	OLED_Refresh_Gram();
 }
 
@@ -925,4 +1005,22 @@ void fcTasksInit(void)
 
 	/* Enable ultrasound3 data collection TASK */
 	setTaskEnabled(TASK_ULTRASOUND3_READDATA, true);
+
+	/* Enable ultrasound4 update TASK (Repeated sending startup sequence) */
+	setTaskEnabled(TASK_ULTRASOUND4_UPDATE, true);
+
+	/* Enable ultrasound4 data collection TASK */
+	setTaskEnabled(TASK_ULTRASOUND4_READDATA, true);
+
+	/* Enable ultrasound5 update TASK (Repeated sending startup sequence) */
+	setTaskEnabled(TASK_ULTRASOUND5_UPDATE, true);
+
+	/* Enable ultrasound5 data collection TASK */
+	setTaskEnabled(TASK_ULTRASOUND5_READDATA, true);
+
+	/* Enable ultrasound6 update TASK (Repeated sending startup sequence) */
+	setTaskEnabled(TASK_ULTRASOUND6_UPDATE, true);
+
+	/* Enable ultrasound6 data collection TASK */
+	setTaskEnabled(TASK_ULTRASOUND6_READDATA, true);
 }

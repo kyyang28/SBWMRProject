@@ -204,12 +204,15 @@ static void imuMahonyAHRSUpdate(timeUs_t currentTimeUs, float dt, float gx, floa
 	}
 	
 	/* Step 4: If accelerometer data is available, use measured accelerometer vector */
+//	printf("ax: %.4f ay: %.4f az: %.4f\r\n", ax, ay, az);
 	recipNorm = sq(ax) + sq(ay) + sq(az);
+//	printf("recipNorm: %.4f\r\n", recipNorm);
 	if (useAcc && recipNorm > 0.01f) {
 //		printf("%s, %d\r\n", __FUNCTION__, __LINE__);
 		/* Normalise accelerometer data */
 		recipNorm = invSqrt(recipNorm);
 //		recipNorm = fastInvSqrt(recipNorm);
+//		printf("recipNormInv: %.4f\r\n", recipNorm);
 		ax *= recipNorm;
 		ay *= recipNorm;
 		az *= recipNorm;

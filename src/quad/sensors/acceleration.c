@@ -38,6 +38,11 @@ static bool isOnFinalAccelerationCalibrationCycle(void)
 	return calibratingA == 1;
 }
 
+void accSetCalibrationCycles(uint16_t requiredCalibrationCycles)
+{
+	calibratingA = requiredCalibrationCycles;
+}
+
 void ResetRollAndPitchTrims(rollAndPitchTrims_t *rollAndPitchTrims)
 {
     rollAndPitchTrims->values.roll = 0;

@@ -25,6 +25,10 @@ static bool ultrasoundDetect(void)
 
 bool sensorsAutodetect(const gyroConfig_t *gyroConfig, const accelerometerConfig_t *accelerometerConfig, const ultrasoundConfig_t *ultrasoundConfig)
 {
+	/* +-----------------------------------------------------------------------+ */
+	/* +---------------------- Gyroscope initialisation -----------------------+ */
+	/* +-----------------------------------------------------------------------+ */
+	
 	/* gyro must be initialised before accelerometer */
 	if (!gyroInit(gyroConfig)) {
 		return false;
@@ -36,7 +40,12 @@ bool sensorsAutodetect(const gyroConfig_t *gyroConfig, const accelerometerConfig
 #endif
 	
 //	printf("gyro.taragetLooptime: %u\r\n", gyro.targetLooptime);
-	
+
+
+	/* +-----------------------------------------------------------------------+ */
+	/* +-------------------- Accelerometer initialisation ---------------------+ */
+	/* +-----------------------------------------------------------------------+ */
+
 	/* Accelerometer initialisation */
 	accInit(accelerometerConfig, gyro.targetLooptime);		// gyro.targetLooptime = 1000 us for F450 quad, gyro.targetLooptime = 125 us for F210 quad
 	
@@ -52,7 +61,9 @@ bool sensorsAutodetect(const gyroConfig_t *gyroConfig, const accelerometerConfig
 //        mag.dev.magAlign = compassConfig->mag_align;
 //    }
 	
-	/* Ultrasound initialisation */
+	/* +-----------------------------------------------------------------------+ */
+	/* +---------------------- Ultrasound initialisation ----------------------+ */
+	/* +-----------------------------------------------------------------------+ */
 #ifdef ULTRASOUND
 	if (ultrasoundDetect()) {
 		ultrasoundInit(ultrasoundConfig);

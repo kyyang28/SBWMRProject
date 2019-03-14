@@ -33,10 +33,12 @@
 int Encoder1, Encoder2;
 int stabilisePwmVal, velocityPwmVal, yawPwmVal;
 int motor1Pwm, motor2Pwm;
-int yawMagnitude = 45;
+int yawMagnitude = 95;
+//int yawMagnitude = 45;
 uint32_t stationaryFlag = 0;
 float velocityUpdatedMovement = 0.0f;
-float balanceSetpoint = 0.0f;
+int balanceSetpoint = 0;
+//int balanceSetpoint = 0;
 float velocitySetpoint = 0.0f;
 //float yawSetpoint = 0.0f;
 
@@ -482,8 +484,9 @@ void updateMotorPwm(int *motorPwm1, int *motorPwm2)
 static int stabilisationControlSBWMR(int pitchAngle, float gyroY)
 {
 	int errorAngle;
-	int Kp = 300;				// 500 * 0.6 = 300
-	float Kd = 31.8;			// 55 * 0.6 = 33
+	int Kp = 300;				// 500 * 0.7 = 350
+	float Kd = 45.0;			// 50 * 0.7 = 35
+//	float Kd = 31.8;			// 55 * 0.6 = 33
 	float stabilisePwm;
 	
 //	errorAngle = pitchAngle - 4;
@@ -498,17 +501,20 @@ static int velocityControlSBWMR(int leftEncoder, int rightEncoder)
 {
 	static float velocityPwm, encoderError, encoder, encoderIntegral;
 //	float Kp = 144.75;		// leftEncoder + rightEncoder with dividing by 2 (using TOP quadcopter landing plate)
-	float Kp = 116.75;		// leftEncoder + rightEncoder with dividing by 2 (w/o using TOP quadcopter landing plate)
+//	float Kp = 116.75;		// leftEncoder + rightEncoder with dividing by 2 (w/o using TOP quadcopter landing plate)
+	float Kp = 80.0;		// leftEncoder + rightEncoder w/o dividing by 2
 //	float Kp = 85.75;		// leftEncoder + rightEncoder w/o dividing by 2
 	float Ki = Kp / 200;
 	
 	if (driveForward == 1 && driveReverse == 0 && turnLeft == 0 && turnRight == 0) {
 //		printf("forward: %d, %d\r\n", leftEncoder, rightEncoder);
-		velocityUpdatedMovement = -50.0;			// negative value representing moving forward
+		velocityUpdatedMovement = -70.0;			// negative value representing moving forward
+//		velocityUpdatedMovement = -50.0;			// negative value representing moving forward
 		stationaryFlag = 0;
 	} else if (driveForward == 0 && driveReverse == 1 && turnLeft == 0 && turnRight == 0) {
 //		printf("reverse: %d, %d\r\n", leftEncoder, rightEncoder);
-		velocityUpdatedMovement = 50.0;			// positive value representing moving backward
+		velocityUpdatedMovement = 70.0;			// positive value representing moving backward
+//		velocityUpdatedMovement = 50.0;			// positive value representing moving backward
 		stationaryFlag = 0;
 	} else if (driveForward == 0 && driveReverse == 0 && turnLeft == 0 && turnRight == 0) {
 		velocityUpdatedMovement = 0;
@@ -516,8 +522,8 @@ static int velocityControlSBWMR(int leftEncoder, int rightEncoder)
 	
 //	printf("movement: %f\r\n", movement);
 	
-//	encoderError = (leftEncoder + rightEncoder) - velocitySetpoint;		// velocitySetpoint is set to 0
-	encoderError = (leftEncoder + rightEncoder) / 2 - velocitySetpoint;		// velocitySetpoint is set to 0
+	encoderError = (leftEncoder + rightEncoder) - velocitySetpoint;		// velocitySetpoint is set to 0
+//	encoderError = (leftEncoder + rightEncoder) / 2 - velocitySetpoint;		// velocitySetpoint is set to 0
 	
 	/* Low pass filter */
 	encoder *= 0.7f;
@@ -528,12 +534,12 @@ static int velocityControlSBWMR(int leftEncoder, int rightEncoder)
 	encoderIntegral = encoderIntegral - velocityUpdatedMovement;
 	
 	/* 4000 */
-	if (encoderIntegral > 5000) {
-		encoderIntegral = 5000;
+	if (encoderIntegral > 8000) {
+		encoderIntegral = 8000;
 	}
 	
-	if (encoderIntegral < -5000) {
-		encoderIntegral = -5000;
+	if (encoderIntegral < -8000) {
+		encoderIntegral = -8000;
 	}
 	
 	velocityPwm = Kp * encoder + Ki * encoderIntegral;
@@ -884,56 +890,56 @@ static void taskOLEDDisplay(timeUs_t currentTimeUs)
 	OLED_ShowString(79, 00, ".");
 	OLED_ShowNumber(88, 00, (int)((round(temperatureData * 100) / 100 - (int)temperatureData) * 100), 2, 12);		// display temperature integer part
 	OLED_ShowString(105, 00, "`C");
-	
-	/* +------------------- Display encoder1 (left encoder) value -------------------+ */
-	OLED_ShowString(00, 10, "LeftEnco: ");
-	
-	if (Encoder1 < 0) {
-		OLED_ShowString(80, 10, "-");
-		OLED_ShowNumber(95, 10, -Encoder1, 3, 12);
-	} else {
-		OLED_ShowString(80, 10, "+");
-		OLED_ShowNumber(95, 10, Encoder1, 3, 12);
-	}
-	
-	/* +------------------- Display encoder2 (right encoder) value -------------------+ */
-	OLED_ShowString(00, 20, "RightEnco: ");
-	
-	if (Encoder2 < 0) {
-		OLED_ShowString(80, 20, "-");
-		OLED_ShowNumber(95, 20, -Encoder2, 3, 12);
-	} else {
-		OLED_ShowString(80, 20, "+");
-		OLED_ShowNumber(95, 20, Encoder2, 3, 12);
-	}
 
 	/* +---------------------------- Display Pitch angle -----------------------------+ */
-	OLED_ShowString(0, 30, "P/Y: ");
+	OLED_ShowString(0, 10, "P/Y: ");
 	
 	/* Display Euler Pitch angle */
 	if (attitude.raw[Y] < 0) {
-		OLED_ShowString(40, 30, "-");
-		OLED_ShowNumber(45, 30, -attitude.raw[Y], 3, 12);
-//		OLED_ShowString(80, 30, "-");
-//		OLED_ShowNumber(95, 30, -attitude.raw[Y], 3, 12);
-//		OLED_ShowNumber(45, 30, attitude.raw[Y] + 360, 3, 12);
+		OLED_ShowString(40, 10, "-");
+		OLED_ShowNumber(45, 10, -attitude.raw[Y], 3, 12);
+//		OLED_ShowString(80, 10, "-");
+//		OLED_ShowNumber(95, 10, -attitude.raw[Y], 3, 12);
+//		OLED_ShowNumber(45, 10, attitude.raw[Y] + 360, 3, 12);
 	} else {
-		OLED_ShowString(40, 30, "+");
-		OLED_ShowNumber(45, 30, attitude.raw[Y], 3, 12);		
-//		OLED_ShowString(80, 30, "+");
-//		OLED_ShowNumber(95, 30, attitude.raw[Y], 3, 12);		
-//		OLED_ShowNumber(45, 30, attitude.raw[Y], 3, 12);
+		OLED_ShowString(40, 10, "+");
+		OLED_ShowNumber(45, 10, attitude.raw[Y], 3, 12);		
+//		OLED_ShowString(80, 10, "+");
+//		OLED_ShowNumber(95, 10, attitude.raw[Y], 3, 12);		
+//		OLED_ShowNumber(45, 10, attitude.raw[Y], 3, 12);
 	}
 
 	/* Display Euler Yaw angle */
 	if (attitude.raw[Z] < 0) {
-//		OLED_ShowString(80, 30, "-");
-		OLED_ShowNumber(85, 30, attitude.raw[Z] + 360, 3, 12);
+//		OLED_ShowString(80, 10, "-");
+		OLED_ShowNumber(85, 10, attitude.raw[Z] + 360, 3, 12);
 	} else {
-//		OLED_ShowString(80, 30, "+");
-		OLED_ShowNumber(85, 30, attitude.raw[Z], 3, 12);		
+//		OLED_ShowString(80, 10, "+");
+		OLED_ShowNumber(85, 10, attitude.raw[Z], 3, 12);		
+	}
+		
+	/* +------------------- Display encoder1 (left encoder) value -------------------+ */
+	OLED_ShowString(00, 20, "LeftEnco: ");
+	
+	if (Encoder1 < 0) {
+		OLED_ShowString(80, 20, "-");
+		OLED_ShowNumber(95, 20, -Encoder1, 3, 12);
+	} else {
+		OLED_ShowString(80, 20, "+");
+		OLED_ShowNumber(95, 20, Encoder1, 3, 12);
 	}
 	
+	/* +------------------- Display encoder2 (right encoder) value -------------------+ */
+	OLED_ShowString(00, 30, "RightEnco: ");
+	
+	if (Encoder2 < 0) {
+		OLED_ShowString(80, 30, "-");
+		OLED_ShowNumber(95, 30, -Encoder2, 3, 12);
+	} else {
+		OLED_ShowString(80, 30, "+");
+		OLED_ShowNumber(95, 30, Encoder2, 3, 12);
+	}
+
 	/* +---------------------------- Display ultrasound data -----------------------------+ */
 //	if (ultrasound1DistanceData < 0) {
 //		OLED_ShowString(00, 50, "-");

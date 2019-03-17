@@ -90,5 +90,14 @@ float fastInvSqrt(float x);
 float degreesToRadians(int16_t degrees);
 void buildRotationMatrix(fp_angles_t *delta, float matrix[3][3]);
 
+int32_t quickMedianFilter3(int32_t * v);
+int32_t quickMedianFilter5(int32_t * v);
+int32_t quickMedianFilter7(int32_t * v);
+int32_t quickMedianFilter9(int32_t * v);
+
+float quickMedianFilter3f(float * v);
+float quickMedianFilter5f(float * v);
+float quickMedianFilter7f(float * v);
+float quickMedianFilter9f(float * v);
 
 #endif	// __MATHS_H

@@ -34,6 +34,7 @@ int Encoder1, Encoder2;
 int stabilisePwmVal, velocityPwmVal, yawPwmVal;
 int motor1Pwm, motor2Pwm;
 int yawMagnitude = 95;
+int speedLimit = 12000;
 //int yawMagnitude = 45;
 uint32_t stationaryFlag = 0;
 float velocityUpdatedMovement = 0.0f;
@@ -281,24 +282,10 @@ static void buttonModeSwitchPollOps(button_t *buttonModeSwitchConfig)
 	
 	/* Case for long pressing */
 	if (res == 2) {
+//	if ((stopFlag == true) && (res == 2)) {
 		isCollisionAvoidanceModeActivated = !isCollisionAvoidanceModeActivated;
 	}
 }
-
-//static void taskUpdateRxMain(timeUs_t currentTimeUs)
-//{
-//	/* retrieve RX data */
-//	processRx(currentTimeUs);
-//	
-//	/* new rx data is available */
-//	isRXDataNew = true;
-//	
-//	/* updateRcCommands function sets rcCommand  */
-//	updateRcCommands();
-//	
-//	/* update LEDs */
-//	updateLEDs();
-//}
 
 /* Encoder speed values */
 int Read_Encoder(uint8_t TIMX)
@@ -397,7 +384,7 @@ bool activateMotors(int pitchAngle)
 	 *
 	 * then update the isMotorEnabled to false (i.e. deactivate the motors), otherwise, activate the motors
 	 */
-	if ((stopFlag == true) || (pitchAngle < -50) || (pitchAngle > 50) || (isMotorActivated == false)) {
+	if ((stopFlag == true) || (pitchAngle < -65) || (pitchAngle > 65) || (isMotorActivated == false)) {
 //		printf("motor stop!\r\n");
 		isMotorEnabled = false;			// deactivate motors
 	} else {
@@ -484,7 +471,7 @@ void updateMotorPwm(int *motorPwm1, int *motorPwm2)
 static int stabilisationControlSBWMR(int pitchAngle, float gyroY)
 {
 	int errorAngle;
-	int Kp = 300;				// 500 * 0.7 = 350
+	int Kp = 320;				// 500 * 0.7 = 350
 	float Kd = 45.0;			// 50 * 0.7 = 35
 //	float Kd = 31.8;			// 55 * 0.6 = 33
 	float stabilisePwm;
@@ -502,20 +489,64 @@ static int velocityControlSBWMR(int leftEncoder, int rightEncoder)
 	static float velocityPwm, encoderError, encoder, encoderIntegral;
 //	float Kp = 144.75;		// leftEncoder + rightEncoder with dividing by 2 (using TOP quadcopter landing plate)
 //	float Kp = 116.75;		// leftEncoder + rightEncoder with dividing by 2 (w/o using TOP quadcopter landing plate)
-	float Kp = 80.0;		// leftEncoder + rightEncoder w/o dividing by 2
+	float Kp = 75.0;		// leftEncoder + rightEncoder w/o dividing by 2
+//	float Kp = 80.0;		// leftEncoder + rightEncoder w/o dividing by 2
 //	float Kp = 85.75;		// leftEncoder + rightEncoder w/o dividing by 2
 	float Ki = Kp / 200;
 	
 	if (driveForward == 1 && driveReverse == 0 && turnLeft == 0 && turnRight == 0) {
 //		printf("forward: %d, %d\r\n", leftEncoder, rightEncoder);
-		velocityUpdatedMovement = -70.0;			// negative value representing moving forward
+		velocityUpdatedMovement = -80.0;			// negative value representing moving forward
 //		velocityUpdatedMovement = -50.0;			// negative value representing moving forward
-		stationaryFlag = 0;
+//		stationaryFlag = 0;
+
+#if 0		
+		if (ultrasound2DistanceData < 80) {		// 20 cm
+//			speedLimit = 3000;
+			velocityUpdatedMovement = -60.0;
+		}
+#endif
+
+#if 0		
+		if (ultrasound2DistanceData < 60) {
+//			speedLimit = 12000;
+			velocityUpdatedMovement = -40.0;
+		}
+#endif
+
+#if 0		
+		if (ultrasound2DistanceData < 50) {
+//			speedLimit = 12000;
+			velocityUpdatedMovement = -20.0;
+		}
+#endif
+		
+		if (ultrasound2DistanceData < 60) {
+//			speedLimit = 12000;
+			velocityUpdatedMovement = -20.0;
+		}
+		
+		if (ultrasound2DistanceData < 40) {
+//			speedLimit = 12000;
+			velocityUpdatedMovement = 0.0;
+		}
+		
 	} else if (driveForward == 0 && driveReverse == 1 && turnLeft == 0 && turnRight == 0) {
 //		printf("reverse: %d, %d\r\n", leftEncoder, rightEncoder);
-		velocityUpdatedMovement = 70.0;			// positive value representing moving backward
+		velocityUpdatedMovement = 80.0;			// positive value representing moving backward
 //		velocityUpdatedMovement = 50.0;			// positive value representing moving backward
-		stationaryFlag = 0;
+//		stationaryFlag = 0;
+
+		if (ultrasound5DistanceData < 60) {
+//			speedLimit = 12000;
+			velocityUpdatedMovement = 20.0;
+		}
+		
+		if (ultrasound5DistanceData < 40) {
+//			speedLimit = 12000;
+			velocityUpdatedMovement = 0.0;
+		}
+		
 	} else if (driveForward == 0 && driveReverse == 0 && turnLeft == 0 && turnRight == 0) {
 		velocityUpdatedMovement = 0;
 	}
@@ -534,12 +565,12 @@ static int velocityControlSBWMR(int leftEncoder, int rightEncoder)
 	encoderIntegral = encoderIntegral - velocityUpdatedMovement;
 	
 	/* 4000 */
-	if (encoderIntegral > 8000) {
-		encoderIntegral = 8000;
+	if (encoderIntegral > speedLimit) {
+		encoderIntegral = speedLimit;
 	}
 	
-	if (encoderIntegral < -8000) {
-		encoderIntegral = -8000;
+	if (encoderIntegral < -speedLimit) {
+		encoderIntegral = -speedLimit;
 	}
 	
 	velocityPwm = Kp * encoder + Ki * encoderIntegral;
@@ -558,7 +589,6 @@ static int yawControlSBWMR(float gyroZ, int leftEncoder, int rightEncoder)
 
 	float Kp = 57.0f;
 	float Kd = 8.4f;
-
 
 	if (turnLeft == 1 || turnRight == 1) {
 
@@ -675,7 +705,7 @@ bool liftUpSBWMR(float accZ, int16_t pitchAngle, int32_t leftEncoder, int32_t ri
 		 * 5000 is based on the current setup of accelerometer. the z-axis of acc is roughly 3358,
 		 * when lift up rapidly, the value is changed to above 5000
 		 */
-		if (accZ > 5000 && (pitchAngle > (-20 + balanceSetpoint) && pitchAngle < (20 + balanceSetpoint))) {
+		if (accZ > 6000 && (pitchAngle > (-20 + balanceSetpoint) && pitchAngle < (20 + balanceSetpoint))) {
 //			printf("condition1-2\r\n");
 			condition = 2;
 		}
@@ -787,7 +817,7 @@ static void taskMotorEncoder(timeUs_t currentTimeUs)
 //		printf("Motor: %d\r\n", Motor1);
 
 		limitMotorPwm(&motor1Pwm, &motor2Pwm);
-		
+
 		/* Check if the SBWMR is lifted up or not, if so, update the isMotorActivated to false (deactivate the motors) */
 		if (liftUpSBWMR(acc.accSmooth[Z], attitude.raw[Y], Encoder1, Encoder2)) {
 //			printf("%s, %d\r\n", __FUNCTION__, __LINE__);

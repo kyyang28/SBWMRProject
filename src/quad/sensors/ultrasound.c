@@ -1,5 +1,6 @@
 
 #include <stdio.h>
+#include "maths.h"
 #include "target.h"
 #include "sensors.h"
 #include "runtime_config.h"
@@ -7,6 +8,8 @@
 #ifdef ULTRASOUND
 
 #include "ultrasound.h"
+
+#define NUMBER_OF_SAMPLES					5
 
 int16_t ultrasoundMaxRangeCm;
 
@@ -63,6 +66,174 @@ void ultrasound6Update(timeUs_t currentTimeUs)
 //	printf("%s, %d\r\n", __FUNCTION__, __LINE__);
 }
 
+static int32_t applyUltrasound1MedianFilter(int32_t newUltrasoundData)
+{
+	static int32_t ultrasoundFilterSamples[NUMBER_OF_SAMPLES];
+	static int currentSampleIndex = 0;
+	static bool medianFilterEnabled = false;
+	int nextSampleIndex;
+	
+	/* ULTRASOUND_OUT_OF_RANGE = -1 */
+	if (newUltrasoundData > ULTRASOUND_OUT_OF_RANGE) {
+		/* Only accept the data within the range */
+		nextSampleIndex = (currentSampleIndex + 1);
+		
+		if (nextSampleIndex == NUMBER_OF_SAMPLES) {
+			nextSampleIndex = 0;
+			medianFilterEnabled = true;
+		}
+		
+		ultrasoundFilterSamples[currentSampleIndex] = newUltrasoundData;
+		currentSampleIndex = nextSampleIndex;
+	}
+	
+	if (medianFilterEnabled) {
+		return quickMedianFilter5(ultrasoundFilterSamples);
+	} else {
+		return newUltrasoundData;
+	}
+}
+
+static int32_t applyUltrasound2MedianFilter(int32_t newUltrasoundData)
+{
+	static int32_t ultrasoundFilterSamples[NUMBER_OF_SAMPLES];
+	static int currentSampleIndex = 0;
+	static bool medianFilterEnabled = false;
+	int nextSampleIndex;
+	
+	/* ULTRASOUND_OUT_OF_RANGE = -1 */
+	if (newUltrasoundData > ULTRASOUND_OUT_OF_RANGE) {
+		/* Only accept the data within the range */
+		nextSampleIndex = (currentSampleIndex + 1);
+		
+		if (nextSampleIndex == NUMBER_OF_SAMPLES) {
+			nextSampleIndex = 0;
+			medianFilterEnabled = true;
+		}
+		
+		ultrasoundFilterSamples[currentSampleIndex] = newUltrasoundData;
+		currentSampleIndex = nextSampleIndex;
+	}
+	
+	if (medianFilterEnabled) {
+		return quickMedianFilter5(ultrasoundFilterSamples);
+	} else {
+		return newUltrasoundData;
+	}
+}
+
+static int32_t applyUltrasound3MedianFilter(int32_t newUltrasoundData)
+{
+	static int32_t ultrasoundFilterSamples[NUMBER_OF_SAMPLES];
+	static int currentSampleIndex = 0;
+	static bool medianFilterEnabled = false;
+	int nextSampleIndex;
+	
+	/* ULTRASOUND_OUT_OF_RANGE = -1 */
+	if (newUltrasoundData > ULTRASOUND_OUT_OF_RANGE) {
+		/* Only accept the data within the range */
+		nextSampleIndex = (currentSampleIndex + 1);
+		
+		if (nextSampleIndex == NUMBER_OF_SAMPLES) {
+			nextSampleIndex = 0;
+			medianFilterEnabled = true;
+		}
+		
+		ultrasoundFilterSamples[currentSampleIndex] = newUltrasoundData;
+		currentSampleIndex = nextSampleIndex;
+	}
+	
+	if (medianFilterEnabled) {
+		return quickMedianFilter5(ultrasoundFilterSamples);
+	} else {
+		return newUltrasoundData;
+	}
+}
+
+static int32_t applyUltrasound4MedianFilter(int32_t newUltrasoundData)
+{
+	static int32_t ultrasoundFilterSamples[NUMBER_OF_SAMPLES];
+	static int currentSampleIndex = 0;
+	static bool medianFilterEnabled = false;
+	int nextSampleIndex;
+	
+	/* ULTRASOUND_OUT_OF_RANGE = -1 */
+	if (newUltrasoundData > ULTRASOUND_OUT_OF_RANGE) {
+		/* Only accept the data within the range */
+		nextSampleIndex = (currentSampleIndex + 1);
+		
+		if (nextSampleIndex == NUMBER_OF_SAMPLES) {
+			nextSampleIndex = 0;
+			medianFilterEnabled = true;
+		}
+		
+		ultrasoundFilterSamples[currentSampleIndex] = newUltrasoundData;
+		currentSampleIndex = nextSampleIndex;
+	}
+	
+	if (medianFilterEnabled) {
+		return quickMedianFilter5(ultrasoundFilterSamples);
+	} else {
+		return newUltrasoundData;
+	}
+}
+
+static int32_t applyUltrasound5MedianFilter(int32_t newUltrasoundData)
+{
+	static int32_t ultrasoundFilterSamples[NUMBER_OF_SAMPLES];
+	static int currentSampleIndex = 0;
+	static bool medianFilterEnabled = false;
+	int nextSampleIndex;
+	
+	/* ULTRASOUND_OUT_OF_RANGE = -1 */
+	if (newUltrasoundData > ULTRASOUND_OUT_OF_RANGE) {
+		/* Only accept the data within the range */
+		nextSampleIndex = (currentSampleIndex + 1);
+		
+		if (nextSampleIndex == NUMBER_OF_SAMPLES) {
+			nextSampleIndex = 0;
+			medianFilterEnabled = true;
+		}
+		
+		ultrasoundFilterSamples[currentSampleIndex] = newUltrasoundData;
+		currentSampleIndex = nextSampleIndex;
+	}
+	
+	if (medianFilterEnabled) {
+		return quickMedianFilter5(ultrasoundFilterSamples);
+	} else {
+		return newUltrasoundData;
+	}
+}
+
+static int32_t applyUltrasound6MedianFilter(int32_t newUltrasoundData)
+{
+	static int32_t ultrasoundFilterSamples[NUMBER_OF_SAMPLES];
+	static int currentSampleIndex = 0;
+	static bool medianFilterEnabled = false;
+	int nextSampleIndex;
+	
+	/* ULTRASOUND_OUT_OF_RANGE = -1 */
+	if (newUltrasoundData > ULTRASOUND_OUT_OF_RANGE) {
+		/* Only accept the data within the range */
+		nextSampleIndex = (currentSampleIndex + 1);
+		
+		if (nextSampleIndex == NUMBER_OF_SAMPLES) {
+			nextSampleIndex = 0;
+			medianFilterEnabled = true;
+		}
+		
+		ultrasoundFilterSamples[currentSampleIndex] = newUltrasoundData;
+		currentSampleIndex = nextSampleIndex;
+	}
+	
+	if (medianFilterEnabled) {
+		return quickMedianFilter5(ultrasoundFilterSamples);
+	} else {
+		return newUltrasoundData;
+	}
+}
+
 /* Get the last distance (in cm) measured by hcsr04 ultrasound sensor, ULTRASOUND_OUT_OF_RANGE is returned when greater than 4 meters */
 int32_t ultrasound1Read(void)
 {
@@ -72,8 +243,8 @@ int32_t ultrasound1Read(void)
 		distance = ULTRASOUND_OUT_OF_RANGE;				// ULTRASOUND_OUT_OF_RANGE = -1
 	}
 
-//	return applyUltrasoundMedianFilter(distance);
-	return distance;
+	return applyUltrasound1MedianFilter(distance);
+//	return distance;
 }
 
 /* Get the last distance (in cm) measured by hcsr04 ultrasound sensor, ULTRASOUND_OUT_OF_RANGE is returned when greater than 4 meters */
@@ -85,8 +256,8 @@ int32_t ultrasound2Read(void)
 		distance = ULTRASOUND_OUT_OF_RANGE;				// ULTRASOUND_OUT_OF_RANGE = -1
 	}
 
-//	return applyUltrasoundMedianFilter(distance);
-	return distance;
+	return applyUltrasound2MedianFilter(distance);
+//	return distance;
 }
 
 /* Get the last distance (in cm) measured by hcsr04 ultrasound sensor, ULTRASOUND_OUT_OF_RANGE is returned when greater than 4 meters */
@@ -98,8 +269,8 @@ int32_t ultrasound3Read(void)
 		distance = ULTRASOUND_OUT_OF_RANGE;				// ULTRASOUND_OUT_OF_RANGE = -1
 	}
 
-//	return applyUltrasoundMedianFilter(distance);
-	return distance;
+	return applyUltrasound3MedianFilter(distance);
+//	return distance;
 }
 
 /* Get the last distance (in cm) measured by hcsr04 ultrasound sensor, ULTRASOUND_OUT_OF_RANGE is returned when greater than 4 meters */
@@ -111,8 +282,8 @@ int32_t ultrasound4Read(void)
 		distance = ULTRASOUND_OUT_OF_RANGE;				// ULTRASOUND_OUT_OF_RANGE = -1
 	}
 
-//	return applyUltrasoundMedianFilter(distance);
-	return distance;
+	return applyUltrasound4MedianFilter(distance);
+//	return distance;
 }
 
 /* Get the last distance (in cm) measured by hcsr04 ultrasound sensor, ULTRASOUND_OUT_OF_RANGE is returned when greater than 4 meters */
@@ -124,8 +295,8 @@ int32_t ultrasound5Read(void)
 		distance = ULTRASOUND_OUT_OF_RANGE;				// ULTRASOUND_OUT_OF_RANGE = -1
 	}
 
-//	return applyUltrasoundMedianFilter(distance);
-	return distance;
+	return applyUltrasound5MedianFilter(distance);
+//	return distance;
 }
 
 /* Get the last distance (in cm) measured by hcsr04 ultrasound sensor, ULTRASOUND_OUT_OF_RANGE is returned when greater than 4 meters */
@@ -137,8 +308,8 @@ int32_t ultrasound6Read(void)
 		distance = ULTRASOUND_OUT_OF_RANGE;				// ULTRASOUND_OUT_OF_RANGE = -1
 	}
 
-//	return applyUltrasoundMedianFilter(distance);
-	return distance;
+	return applyUltrasound6MedianFilter(distance);
+//	return distance;
 }
 
 #endif

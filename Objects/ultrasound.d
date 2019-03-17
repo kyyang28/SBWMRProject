@@ -1,10 +1,12 @@
 .\objects\ultrasound.o: src\quad\sensors\ultrasound.c
 .\objects\ultrasound.o: F:\Keil_v5\ARM\ARMCC\Bin\..\include\stdio.h
+.\objects\ultrasound.o: .\src\quad\common\maths.h
+.\objects\ultrasound.o: F:\Keil_v5\ARM\ARMCC\Bin\..\include\math.h
+.\objects\ultrasound.o: F:\Keil_v5\ARM\ARMCC\Bin\..\include\stdint.h
 .\objects\ultrasound.o: .\src\quad\target\13-PID\target.h
 .\objects\ultrasound.o: .\src\lib\STM32F4xx_StdPeriph_Drivers\inc\stm32f4xx_exti.h
 .\objects\ultrasound.o: .\src\lib\CMSIS\CM4\DeviceSupport\ST\STM32F4xx\stm32f4xx.h
 .\objects\ultrasound.o: .\src\lib\CMSIS\CM4\CoreSupport\core_cm4.h
-.\objects\ultrasound.o: F:\Keil_v5\ARM\ARMCC\Bin\..\include\stdint.h
 .\objects\ultrasound.o: .\src\lib\CMSIS\CM4\CoreSupport\core_cmInstr.h
 .\objects\ultrasound.o: .\src\lib\CMSIS\CM4\CoreSupport\core_cmFunc.h
 .\objects\ultrasound.o: .\src\lib\CMSIS\CM4\CoreSupport\core_cmSimd.h

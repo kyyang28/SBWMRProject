@@ -43,6 +43,8 @@
 ".\objects\fc_tasks.o"
 ".\objects\runtime_config.o"
 ".\objects\beeper.o"
+".\objects\asyncfatfs.o"
+".\objects\fat_standard.o"
 ".\objects\imu.o"
 ".\objects\config_eeprom.o"
 ".\objects\feature.o"
@@ -57,6 +59,8 @@
 ".\objects\pwm.o"
 ".\objects\rx.o"
 ".\objects\debug.o"
+".\objects\blackbox.o"
+".\objects\blackbox_io.o"
 ".\objects\scheduler.o"
 --strict --scatter ".\Objects\13-PID.sct"
 --summary_stderr --info summarysizes --map --load_addr_map_info --xref --callgraph --symbols

@@ -137,7 +137,7 @@ int main(void)
 	serialInit(SerialConfig());
 
 	/* Initialise debugging serial port */
-//	rxSerial1TestInit();
+//	rxSerial1TestInit();7
 	
 	/* Initialise bluetooth serial */
 	bluetoothSerial6Init();
@@ -199,6 +199,10 @@ int main(void)
 //		printf("%s, %d\r\n", __FUNCTION__, __LINE__);
 		spiInit(SPIDEV_2);
 	#endif
+	#ifdef USE_SPI_DEVICE_3
+//		printf("%s, %d\r\n", __FUNCTION__, __LINE__);
+		spiInit(SPIDEV_3);
+	#endif
 #endif
 
 #ifdef BEEPER
@@ -236,6 +240,24 @@ int main(void)
 	
 	/* IMU init for data fusing Euler angles (Roll, Pitch and Yaw) */
 	imuInit();
+
+#ifdef USE_SDCARD
+	if (feature(FEATURE_SDCARD) && BlackboxConfig()->device == BLACKBOX_SDCARD) {
+//		printf("USE_SDCARD, %s, %d\r\n", __FUNCTION__, __LINE__);
+		sdcardInsertionDetectInit();
+		sdcard_init(SdcardConfig()->useDma);		// SdcardConfig()->useDma = false for now, use DMA later
+		afatfs_init();
+//		if (!sdcard_isInserted()) {
+//			printf("SDCARD is not present!\r\n");
+//		}else {
+//			printf("SDCARD is present!\r\n");
+//		}
+	}
+#endif
+	
+#ifdef BLACKBOX
+	initBlackbox();
+#endif	
 	
 #if defined(USE_IMU)
 	/* set gyro calibration cycles */

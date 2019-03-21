@@ -232,9 +232,13 @@ void handleBlackbox(timeUs_t currentTimeUs)
 {
 //	int i;
 	
+//	printf("currentTimeUs: %u, %d\r\n", currentTimeUs, __LINE__);
+	
 	if (blackboxState >= BLACKBOX_FIRST_HEADER_SENDING_STATE && blackboxState <= BLACKBOX_LAST_HEADER_SENDING_STATE) {
 		blackboxReplenishHeaderBudget();
 	}
+	
+//	printf("currentTimeUs: %u, %d\r\n", currentTimeUs, __LINE__);
 	
 	switch (blackboxState) {
 		case BLACKBOX_STATE_PREPARE_LOG_FILE:
@@ -252,19 +256,22 @@ void handleBlackbox(timeUs_t currentTimeUs)
 		     * JUST FOR TESTING RIGHT NOW.
 		     * Write a dummy contents to the SDCard and read it.
 		     */
-			blackboxPrint("Start of log\n");
-			blackboxPrint("Yankun YANG\n");
-			blackboxPrint("QUADYANG ");
-			blackboxPrint("ABC\n");
-			blackboxPrint("NFC\n");
-			blackboxWrite('Y');
-			blackboxWrite('\n');
-			blackboxWrite('A');
-			blackboxWrite('\n');
-			blackboxWrite('N');
-			blackboxWrite('\n');
-			blackboxWrite('G');
-			blackboxWrite('\n');
+//			printf("Timestamp,gx,gy,gz,ax,ay,az,mx,my,mz,leftencoder,rightencoder,temp,us1,us2,us3,us4,us5,us6\r\n");
+			blackboxPrint("Timestamp,gx,gy,gz,ax,ay,az,mx,my,mz,leftencoder,rightencoder,temp,us1,us2,us3,us4,us5,us6\n");
+//			blackboxPrint("%u,%.4f,%.4f,%d\n", currentTimeUs, gyro.gyroADCf[Y], gyro.gyroADCf[Z], attitude.raw[Y]);
+//			blackboxPrint("Start of log\n");
+//			blackboxPrint("Yankun YANG\n");
+//			blackboxPrint("QUADYANG ");
+//			blackboxPrint("ABC\n");
+//			blackboxPrint("NFC\n");
+//			blackboxWrite('Y');
+//			blackboxWrite('\n');
+//			blackboxWrite('A');
+//			blackboxWrite('\n');
+//			blackboxWrite('N');
+//			blackboxWrite('\n');
+//			blackboxWrite('G');
+//			blackboxWrite('\n');
 
 #if 0
 			/**

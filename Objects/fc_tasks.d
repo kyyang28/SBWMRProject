@@ -84,3 +84,5 @@
 .\objects\fc_tasks.o: .\src\quad\drivers\RCC\RCCTypes.h
 .\objects\fc_tasks.o: .\src\quad\drivers\SYSTEM\system.h
 .\objects\fc_tasks.o: .\src\quad\sensors\ultrasound.h
+.\objects\fc_tasks.o: .\src\quad\io\asyncfatfs\asyncfatfs.h
+.\objects\fc_tasks.o: .\src\quad\io\asyncfatfs\fat_standard.h

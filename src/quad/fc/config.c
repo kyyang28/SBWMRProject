@@ -597,20 +597,20 @@ void createDefaultConfig(master_t *config)
 //	config->throttleCorrectionConfig.throttleCorrectionAngle = 800;			// 80.0 deg with althold or 45.0 for FPV
 //	config->throttleCorrectionConfig.throttleCorrectionValue = 0;			// 10 with althold or 40 for FPV
 
-//#ifdef USE_SDCARD
-//	intFeatureSet(FEATURE_SDCARD, featuresPtr);
-//	resetsdcardConfig(&config->sdcardConfig);
-//#endif
+#ifdef USE_SDCARD
+	intFeatureSet(FEATURE_SDCARD, featuresPtr);
+	resetsdcardConfig(&config->sdcardConfig);
+#endif
 
-//#ifdef BLACKBOX
-//#if defined(ENABLE_BLACKBOX_LOGGING_ON_SDCARD_BY_DEFAULT)
-//	intFeatureSet(FEATURE_BLACKBOX, featuresPtr);
-//	config->blackboxConfig.device = BLACKBOX_DEVICE_SDCARD;		// BLACKBOX using SDCARD media
-//#endif
-//	config->blackboxConfig.rate_num = 1;
-//	config->blackboxConfig.rate_denom = 1;
-//	config->blackboxConfig.on_motor_test = 0;	// default off
-//#endif
+#ifdef BLACKBOX
+#if defined(ENABLE_BLACKBOX_LOGGING_ON_SDCARD_BY_DEFAULT)
+	intFeatureSet(FEATURE_BLACKBOX, featuresPtr);
+	config->blackboxConfig.device = BLACKBOX_DEVICE_SDCARD;		// BLACKBOX using SDCARD media
+#endif
+	config->blackboxConfig.rate_num = 1;
+	config->blackboxConfig.rate_denom = 1;
+	config->blackboxConfig.on_motor_test = 0;	// default off
+#endif
 
 #ifdef BEEPER
 	ResetBeeperConfig(&config->beeperConfig);
@@ -634,7 +634,7 @@ void createDefaultConfig(master_t *config)
 	/* copy first profile into remaining profile */
 	for (int i = 1; i < MAX_PROFILE_COUNT; i++) {			// MAX_PROFILE_COUNT = 3
 		memcpy(&config->profile[i], &config->profile[0], sizeof(profile_t));
-	}	
+	}
 }
 
 static void resetConfig(void)

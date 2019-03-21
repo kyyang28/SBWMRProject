@@ -148,8 +148,8 @@
 #ifdef USE_SPI
 
 #define USE_SPI_DEVICE_1			// SPI1 for MPU9250 MEMS sensor
-//#define USE_SPI_DEVICE_2			// SPI2 for SDCARD interface
-//#define USE_SPI_DEVICE_3
+//#define USE_SPI_DEVICE_2
+#define USE_SPI_DEVICE_3			// SPI3 for SDCARD interface
 
 /* USED BY onboard accelerometer sensor LIS302DL. Now we use it for MPU9250 IMU */
 //#define SPI1_NSS_PIN			PE4
@@ -157,17 +157,19 @@
 #define SPI1_MISO_PIN			PA6			// ADO/SDO on MPU9250
 #define SPI1_MOSI_PIN			PA7			// SDA/SDI on MPU9250
 
-/* SPI2 is utilised for SDCard */
-#define SPI2_NSS_PIN			PE5
-//#define SPI2_SCK_PIN			PB13		// 45
-//#define SPI2_MISO_PIN			PB14		// 46
-//#define SPI2_MOSI_PIN			PB15		// 47
+/* SPI2 is taken by DC Brushed Motor Control (AIN1, BIN1, BIN2) */
+#define SPI2_NSS_PIN			PE15
+#define SPI2_SCK_PIN			PB9				// should be PB10, but PB10 is taken by UART3_TX_PIN
+#define SPI2_MISO_PIN			PC2
+#define SPI2_MOSI_PIN			PC3
 
+/* SPI2 is utilised for SDCard */
 /* PB3 is shared with T_SWO (USB ST LINK), DO NOT reconfigure PB3, otherwise the usb upload function will not work any more */
+#define SPI3_NSS_PIN			PE5
 //#define SPI3_NSS_PIN			PA15
-//#define SPI3_SCK_PIN			PB3			// PC10
-//#define SPI3_MISO_PIN			PB4			// PC11
-//#define SPI3_MOSI_PIN			PB5			// PC12
+#define SPI3_SCK_PIN			PC10		// PB3
+#define SPI3_MISO_PIN			PC11		// PB4
+#define SPI3_MOSI_PIN			PC12		// PB5
 /* +-----------------------------------------------------------------------------------+ */
 /* +--------------------------------------- SPI ---------------------------------------+ */
 /* +-----------------------------------------------------------------------------------+ */
@@ -186,26 +188,26 @@
 /* +------------------------------------- SDCARD --------------------------------------+ */
 /* +-----------------------------------------------------------------------------------+ */
 
-//#define USE_SDCARD
+#define USE_SDCARD
 
 /* according to <<Micro-SD-Storage-Board-Schematic.pdf>>, card is not present, CD(card detect) pin is HIGH (3V3), card is present, CD is LOW */
-//#define SDCARD_DETECT_INVERTED
-//#define SDCARD_SPI_INSTANCE		SPI2
-//#define SDCARD_DETECT_PIN		PC14				// Card Detect PIN
-//#define SDCARD_SPI_CS_PIN		SPI2_NSS_PIN		// SPI2_NSS_PIN = PE5
+#define SDCARD_DETECT_INVERTED
+#define SDCARD_SPI_INSTANCE		SPI3
+#define SDCARD_DETECT_PIN		PC1				// Card Detect PIN
+#define SDCARD_SPI_CS_PIN		SPI3_NSS_PIN		// SPI3_NSS_PIN = PE5
 
 /* Table 42 from <RM0090-STM32F407-Reference_mannual.pdf> */
 //#define SDCARD_DMA_CHANNEL_TX	DMA1_Stream5		// DMA1_Stream5 is for SPI3, shouldn't it be DMA1_Stream4 which is utilised for SPI2
 //#define SDCARD_DMA_CHANNEL_TX	DMA1_Stream4		// DMA1_Stream5 is for SPI3, shouldn't it be DMA1_Stream4 which is utilised for SPI2
-//#define SDCARD_DMA_CHANNEL		0
-//#define SDCARD_DMA_CHANNEL_TX_COMPLETE_FLAG		DMA_FLAG_TCIF5
+#define SDCARD_DMA_CHANNEL		0
+#define SDCARD_DMA_CHANNEL_TX_COMPLETE_FLAG		DMA_FLAG_TCIF5
 //#define SDCARD_DMA_CHANNEL_TX_COMPLETE_FLAG		DMA_FLAG_TCIF4		// for DMA1_Stream4
 
 /* SPI2 is on the APB1 bus whose clock runs at 84MHz. Divide to under 400kHz for initialisation */
-//#define SDCARD_SPI_INITIALISATION_CLOCK_DIVISOR		256		// 84MHz / 256 = 328125 Hz (328.125kHz)
+#define SDCARD_SPI_INITIALISATION_CLOCK_DIVISOR		256		// 84MHz / 256 = 328125 Hz (328.125kHz)
 
 /* Divide to under 25MHz for normal operation */
-//#define SDCARD_SPI_FULL_SPEED_CLOCK_DIVIDER			4		// 84MHz / 4 = 21MHz
+#define SDCARD_SPI_FULL_SPEED_CLOCK_DIVIDER			4		// 84MHz / 4 = 21MHz
 
 /* +------------------------------------------------------------------------------------------------+ */
 /* +------------------------------------- SDCARD --------------------------------------+ */
@@ -215,9 +217,9 @@
 /* +-----------------------------------------------------------------------------------+ */
 /* +------------------------------------ Blackbox -------------------------------------+ */
 /* +-----------------------------------------------------------------------------------+ */
-//#define BLACKBOX
+#define BLACKBOX
 
-//#define ENABLE_BLACKBOX_LOGGING_ON_SDCARD_BY_DEFAULT
+#define ENABLE_BLACKBOX_LOGGING_ON_SDCARD_BY_DEFAULT
 
 /* +-----------------------------------------------------------------------------------+ */
 /* +------------------------------------ Blackbox -------------------------------------+ */

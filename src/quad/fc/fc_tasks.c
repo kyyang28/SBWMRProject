@@ -20,6 +20,8 @@
 #include "rx_pwm.h"
 #include "oled.h"
 #include "ultrasound.h"
+#include "asyncfatfs.h"
+#include "blackbox.h"
 
 //#define TASKS_LEDS_TESTING
 
@@ -68,6 +70,7 @@ static void taskUltrasound3ReadData(timeUs_t currentTimeUs);
 static void taskUltrasound4ReadData(timeUs_t currentTimeUs);
 static void taskUltrasound5ReadData(timeUs_t currentTimeUs);
 static void taskUltrasound6ReadData(timeUs_t currentTimeUs);
+static void taskDataLogger(timeUs_t currentTimeUs);
 //static void taskBluetoothReceive(timeUs_t currentTimeUs);
 
 /* Tasks initialisation */
@@ -194,7 +197,15 @@ cfTask_t cfTasks[TASK_COUNT] = {
 		.desiredPeriod = TASK_PERIOD_HZ(40),				// 1000000 / 40 = 25000 us = 25 ms = 40 Hz from HCSR-04 datasheet
 		.staticPriority = TASK_PRIORITY_MEDIUM,				// TASK_PRIORITY_MEDIUM = 1
 	},
-#endif	
+#endif
+#if defined(USE_SDCARD) && defined(BLACKBOX)
+	[TASK_DATALOGGER] = {
+		.taskName = "DATA_LOGGER",
+		.taskFunc = taskDataLogger,
+		.desiredPeriod = TASK_PERIOD_HZ(250),				// 1000000 / 250 = 4000 us = 4 ms = 250 Hz
+		.staticPriority = TASK_PRIORITY_MEDIUM,				// TASK_PRIORITY_MEDIUM = 1
+	},
+#endif
 };
 
 static void taskUpdateGyro(timeUs_t currentTimeUs)
@@ -278,6 +289,16 @@ static void buttonModeSwitchPollOps(button_t *buttonModeSwitchConfig)
 	if (res == 1) {
 		stopFlag = !stopFlag;
 //		printf("stopFlag: %d\r\n", stopFlag);
+		
+		/* Activate the motors */
+		if (stopFlag == false) {
+#ifdef BLACKBOX
+			if (feature(FEATURE_BLACKBOX)) {
+//				printf("%s, %d\r\n", __FUNCTION__, __LINE__);
+				startBlackbox();
+			}
+#endif
+		}
 	}
 	
 	/* Case for long pressing */
@@ -1008,6 +1029,22 @@ static void taskOLEDDisplay(timeUs_t currentTimeUs)
 	OLED_Refresh_Gram();
 }
 
+static void taskDataLogger(timeUs_t currentTimeUs)
+{
+//	printf("currentTimeUs: %u\r\n", currentTimeUs);
+	
+#ifdef USE_SDCARD
+	afatfs_poll();
+#endif
+	
+#ifdef BLACKBOX
+	if (/*!cliMode && */feature(FEATURE_BLACKBOX)) {
+//		printf("currentTimeUs: %u, %d\r\n", currentTimeUs, __LINE__);
+		handleBlackbox(currentTimeUs);
+	}
+#endif
+}
+
 void fcTasksInit(void)
 {
     /* Clear RTOS queue and enable SYSTEM TASK */
@@ -1034,6 +1071,11 @@ void fcTasksInit(void)
 	/* Enable OLED display TASK */
 	setTaskEnabled(TASK_OLEDDISPLAY, true);
 
+	
+	/* +----------------------------------------------------------------------------------------+ */
+	/* +------------------------------------- Sonar Tasks --------------------------------------+ */
+	/* +----------------------------------------------------------------------------------------+ */
+	
 	/* Enable ultrasound1 update TASK (Repeated sending startup sequence) */
 	setTaskEnabled(TASK_ULTRASOUND1_UPDATE, true);
 
@@ -1069,4 +1111,20 @@ void fcTasksInit(void)
 
 	/* Enable ultrasound6 data collection TASK */
 	setTaskEnabled(TASK_ULTRASOUND6_READDATA, true);
+
+	/* +----------------------------------------------------------------------------------------+ */
+	/* +------------------------------------- Sonar Tasks --------------------------------------+ */
+	/* +----------------------------------------------------------------------------------------+ */
+
+
+	/* +----------------------------------------------------------------------------------------+ */
+	/* +-------------------------------- Data logger Task --------------------------------------+ */
+	/* +----------------------------------------------------------------------------------------+ */
+
+	/* Enable data logger TASK */
+	setTaskEnabled(TASK_DATALOGGER, true);
+
+	/* +----------------------------------------------------------------------------------------+ */
+	/* +-------------------------------- Data logger Task --------------------------------------+ */
+	/* +----------------------------------------------------------------------------------------+ */
 }

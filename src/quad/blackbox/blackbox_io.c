@@ -16,9 +16,10 @@ int32_t blackboxHeaderBudget;
 
 #ifdef USE_SDCARD
 
+#define LOGDIRECTORY_NAME					"SBWMR"
 #define LOGFILE_PREFIX						"LOG"
-#define LOGFILE_SUFFIX						"txt"
-//#define LOGFILE_SUFFIX						"BFL"
+#define LOGFILE_SUFFIX						"csv"
+//#define LOGFILE_SUFFIX						"txt"
 
 static struct {
 	afatfsFilePtr_t logFile;
@@ -216,7 +217,7 @@ static void blackboxLogFileCreated(afatfsFilePtr_t file)
 		blackboxSDCard.largestLogFileNumber++;
 		
 		blackboxSDCard.state = BLACKBOX_SDCARD_READY_TO_LOG;
-		printf("%s, %s, %d\r\n", __FILE__, __FUNCTION__, __LINE__);
+//		printf("%s, %s, %d\r\n", __FILE__, __FUNCTION__, __LINE__);
 	} else {
 		/* Retry */
 		blackboxSDCard.state = BLACKBOX_SDCARD_READY_TO_CREATE_LOG;
@@ -280,8 +281,11 @@ static bool blackboxSDCardBeginLog(void)
 				 * TODO: HERE we can use RTC time and date as the directory name instead of "logs".
 				 * Merge RTC programs later
 				 */
-				afatfs_mkdir("logs", blackboxLogDirCreated);
+				afatfs_mkdir(LOGDIRECTORY_NAME, blackboxLogDirCreated);
+//				afatfs_mkdir("logs", blackboxLogDirCreated);
 
+//				printf("%s, %d\r\n", __FUNCTION__, __LINE__);
+				
 //				afatfs_mkdir("quadLogs", blackboxLogDirCreated);	// just for testing
 //				afatfs_mkdir("pwcLogs", blackboxLogDirCreated);	// just for testing
 //				afatfs_mkdir("yangLogs", blackboxLogDirCreated);	// just for testing
@@ -424,6 +428,8 @@ static bool blackboxSDCardBeginLog(void)
  */
 bool blackboxDeviceBeginLog(void)
 {
+//	printf("device: %d\r\n", BlackboxConfig()->device);
+	
 	switch (BlackboxConfig()->device) {
 #ifdef USE_SDCARD
 		case BLACKBOX_DEVICE_SDCARD:

@@ -625,6 +625,16 @@
               <FileType>1</FileType>
               <FilePath>.\src\quad\io\beeper.c</FilePath>
             </File>
+            <File>
+              <FileName>asyncfatfs.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\src\quad\io\asyncfatfs\asyncfatfs.c</FilePath>
+            </File>
+            <File>
+              <FileName>fat_standard.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\src\quad\io\asyncfatfs\fat_standard.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
@@ -729,6 +739,18 @@
         </Group>
         <Group>
           <GroupName>BLACKBOX</GroupName>
+          <Files>
+            <File>
+              <FileName>blackbox.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\src\quad\blackbox\blackbox.c</FilePath>
+            </File>
+            <File>
+              <FileName>blackbox_io.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\src\quad\blackbox\blackbox_io.c</FilePath>
+            </File>
+          </Files>
         </Group>
         <Group>
           <GroupName>SCHEDULER</GroupName>

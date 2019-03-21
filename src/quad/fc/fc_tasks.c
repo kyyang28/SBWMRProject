@@ -1020,11 +1020,9 @@ static void taskOLEDDisplay(timeUs_t currentTimeUs)
 	/* Display ultrasound sensor data 6 */
 	OLED_ShowNumber(95, 50, ultrasound6DistanceData, 3, 12);
 
-#if 0
-	printf("%u,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%.4f,%.4f,%d\r\n", currentTimeUs, ultrasound1DistanceData, ultrasound2DistanceData, ultrasound3DistanceData, 
-					ultrasound4DistanceData, ultrasound5DistanceData, ultrasound6DistanceData, Encoder1, motor1Pwm, Encoder2, motor2Pwm, gyro.gyroADCf[Y], 
-					gyro.gyroADCf[Z], attitude.raw[Y]);
-#endif
+//	printf("%u,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%.4f,%.4f,%d\r\n", currentTimeUs, ultrasound1DistanceData, ultrasound2DistanceData, ultrasound3DistanceData, 
+//					ultrasound4DistanceData, ultrasound5DistanceData, ultrasound6DistanceData, Encoder1, motor1Pwm, Encoder2, motor2Pwm, gyro.gyroADCf[Y], 
+//					gyro.gyroADCf[Z], attitude.raw[Y]);
 
 	OLED_Refresh_Gram();
 }

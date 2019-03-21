@@ -28,8 +28,6 @@ Project File Date:  03/21/2019
 *** Using Compiler 'V5.06 update 5 (build 528)', folder: 'F:\Keil_v5\ARM\ARMCC\Bin'
 Build target 'STM32F407VG-Discovery'
 compiling blackbox.c...
-src\quad\blackbox\blackbox.c(261): error:  #140: too many arguments in function call
-  			blackboxPrint("%u,%.4f,%.4f,%d\n", currentTimeUs, gyro.gyroADCf[Y], gyro.gyroADCf[Z], attitude.raw[Y]);
 src\quad\blackbox\blackbox.c(63): warning:  #550-D: variable "xmitState"  was set but never used
   }xmitState;
 src\quad\blackbox\blackbox.c(67): warning:  #550-D: variable "blackboxLoggedAnyFrames"  was set but never used
@@ -38,14 +36,11 @@ src\quad\blackbox\blackbox.c(69): warning:  #550-D: variable "blackboxSlowFrameI
   static uint16_t blackboxSlowFrameIterationTimer;
 src\quad\blackbox\blackbox.c(75): warning:  #550-D: variable "blackboxHistory"  was set but never used
   static blackboxMainState_t *blackboxHistory[3];
-src\quad\blackbox\blackbox.c: 4 warnings, 1 error
-compiling rxSerial3Test.c...
-compiling sdcard.c...
-src\quad\drivers\SDCARD\sdcard.c(883): warning:  #111-D: statement is unreachable
-  					break;
-src\quad\drivers\SDCARD\sdcard.c: 1 warning, 0 errors
+src\quad\blackbox\blackbox.c: 4 warnings, 0 errors
 compiling fc_tasks.c...
-".\Objects\13-PID.axf" - 1 Error(s), 5 Warning(s).
+linking...
+Program Size: Code=41572 RO-data=4668 RW-data=5348 ZI-data=10868  
+".\Objects\13-PID.axf" - 0 Error(s), 4 Warning(s).
 
 <h2>Software Packages used:</h2>
 
@@ -59,8 +54,7 @@ Package Vendor: Keil
   F:\Keil_v5\ARM\PACK\Keil\STM32F4xx_DFP\2.13.0\Drivers\CMSIS\Device\ST\STM32F4xx\Include
 
 <h2>Collection of Component Files used:</h2>
-Target not created.
-Build Time Elapsed:  00:00:02
+Build Time Elapsed:  00:00:03
 </pre>
 </body>
 </html>

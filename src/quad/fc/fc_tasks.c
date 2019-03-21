@@ -34,7 +34,7 @@ int Encoder1, Encoder2;
 int stabilisePwmVal, velocityPwmVal, yawPwmVal;
 int motor1Pwm, motor2Pwm;
 int yawMagnitude = 95;
-int speedLimit = 12000;
+int speedLimit = 4000;
 //int yawMagnitude = 45;
 uint32_t stationaryFlag = 0;
 float velocityUpdatedMovement = 0.0f;
@@ -472,8 +472,8 @@ static int stabilisationControlSBWMR(int pitchAngle, float gyroY)
 {
 	int errorAngle;
 	int Kp = 320;				// 500 * 0.7 = 350
-	float Kd = 45.0;			// 50 * 0.7 = 35
-//	float Kd = 31.8;			// 55 * 0.6 = 33
+//	float Kd = 30.0;			// 50 * 0.7 = 35
+	float Kd = 31.8;			// 55 * 0.6 = 33
 	float stabilisePwm;
 	
 //	errorAngle = pitchAngle - 4;
@@ -488,10 +488,13 @@ static int velocityControlSBWMR(int leftEncoder, int rightEncoder)
 {
 	static float velocityPwm, encoderError, encoder, encoderIntegral;
 //	float Kp = 144.75;		// leftEncoder + rightEncoder with dividing by 2 (using TOP quadcopter landing plate)
-//	float Kp = 116.75;		// leftEncoder + rightEncoder with dividing by 2 (w/o using TOP quadcopter landing plate)
-	float Kp = 75.0;		// leftEncoder + rightEncoder w/o dividing by 2
+//	float Kp = 102.75;		// leftEncoder + rightEncoder with dividing by 2 (w/o using TOP quadcopter landing plate)
+	float Kp = 108.75;		// leftEncoder + rightEncoder with dividing by 2 (w/o using TOP quadcopter landing plate)
+//	float Kp = 48.0;		// leftEncoder + rightEncoder w/o dividing by 2
+//	float Kp = 75.0;		// leftEncoder + rightEncoder w/o dividing by 2
 //	float Kp = 80.0;		// leftEncoder + rightEncoder w/o dividing by 2
-//	float Kp = 85.75;		// leftEncoder + rightEncoder w/o dividing by 2
+//	float Kp = 58.75;		// leftEncoder + rightEncoder w/o dividing by 2
+//	float Ki = 0.5;
 	float Ki = Kp / 200;
 	
 	if (driveForward == 1 && driveReverse == 0 && turnLeft == 0 && turnRight == 0) {
@@ -553,8 +556,8 @@ static int velocityControlSBWMR(int leftEncoder, int rightEncoder)
 	
 //	printf("movement: %f\r\n", movement);
 	
-	encoderError = (leftEncoder + rightEncoder) - velocitySetpoint;		// velocitySetpoint is set to 0
-//	encoderError = (leftEncoder + rightEncoder) / 2 - velocitySetpoint;		// velocitySetpoint is set to 0
+//	encoderError = (leftEncoder + rightEncoder) - velocitySetpoint;		// velocitySetpoint is set to 0
+	encoderError = 0.5f * (leftEncoder + rightEncoder) - velocitySetpoint;		// velocitySetpoint is set to 0
 	
 	/* Low pass filter */
 	encoder *= 0.7f;
@@ -582,11 +585,14 @@ static int velocityControlSBWMR(int leftEncoder, int rightEncoder)
 	return velocityPwm;
 }
 
+#if 1
 static int yawControlSBWMR(float gyroZ, int leftEncoder, int rightEncoder)
 {
 	static float yawError, yawPwm, encoderTmp1, yawCnt;
 	static float yawAdjust = 0.9f;
 
+//	float Kp = 25.0f;
+//	float Kd = 0.0f;
 	float Kp = 57.0f;
 	float Kd = 8.4f;
 
@@ -622,7 +628,7 @@ static int yawControlSBWMR(float gyroZ, int leftEncoder, int rightEncoder)
 		stationaryFlag = 0;
 	} else {
 //		yawAdjust = 0.0f;
-		yawAdjust = 0.9f;
+		yawAdjust = 0.0f;
 //		yawError = 0.0f;
 		yawCnt = 0;
 		encoderTmp1 = 0;
@@ -636,21 +642,6 @@ static int yawControlSBWMR(float gyroZ, int leftEncoder, int rightEncoder)
 		stationaryFlag = 0;
 	} else {		
 		yawError = 0;
-	
-#if 0
-		stationaryFlag++;
-//		printf("Inactivate, %d\r\n", stationaryFlag);
-		if ((velocityUpdatedMovement == 0) && (stationaryFlag >= INACTIVITY_CONDITION)) {
-//			yawAdjust = 18.0f;
-//			yawError = yawAdjust;			// counter-clockwise yaw rotation
-			yawError = 18;					// counter-clockwise yaw rotation
-			yawMagnitude = 20;				// limit the yawing speed
-		} else {
-			yawError = 0;
-			yawMagnitude = 45;
-			yawAdjust = 0;
-		}
-#endif
 	}
 
     if (yawError > yawMagnitude) {
@@ -672,6 +663,19 @@ static int yawControlSBWMR(float gyroZ, int leftEncoder, int rightEncoder)
 
 	return yawPwm;
 }
+#else
+static int yawControlSBWMR(float gyroZ, int leftEncoder, int rightEncoder)
+{
+	float yawPwm, yawError;
+	
+	float Kp = 1.0f;
+	
+	yawError = gyroZ - 0;
+	yawPwm = -yawError * Kp;
+	
+	return yawPwm;
+}
+#endif
 
 bool liftUpSBWMR(float accZ, int16_t pitchAngle, int32_t leftEncoder, int32_t rightEncoder)
 {
@@ -836,10 +840,10 @@ static void taskMotorEncoder(timeUs_t currentTimeUs)
 		}
 	}
 	
-//	printf("Encoder1: %d\r\n", Encoder1);
-//	printf("Encoder2: %d\r\n", Encoder2);
-//	printf("Motor1 pwm: %d\r\n", PWMMotor1);
-//	printf("Motor2 pwm: %d\r\n", PWMMotor2);
+//	printf("%d\t\t%d\t\t%d\t\t%d\r\n", Encoder1, motor1Pwm, Encoder2, motor2Pwm);
+	
+//	printf("(LeftEncoder, LeftMotor_PWM) = (%d, %d)\r\n", Encoder1, motor1Pwm);
+//	printf("(RightEncoder, RightMotor_PWM) = (%d, %d)\r\n", Encoder2, motor2Pwm);
 }
 
 static void taskUltrasound1ReadData(timeUs_t currentTimeUs)
@@ -888,7 +892,7 @@ static void taskOLEDDisplay(timeUs_t currentTimeUs)
 {
 	static bool switchFromOADisplayFlag = false;
 
-	UNUSED(currentTimeUs);
+//	UNUSED(currentTimeUs);
 	
 	/* +----------- Display SBWMR modes (Normal and Obstacle Avoidance) -------------+ */
 //	OLED_ShowString(0, 0, "M: ");
@@ -994,6 +998,12 @@ static void taskOLEDDisplay(timeUs_t currentTimeUs)
 
 	/* Display ultrasound sensor data 6 */
 	OLED_ShowNumber(95, 50, ultrasound6DistanceData, 3, 12);
+
+#if 0
+	printf("%u,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%.4f,%.4f,%d\r\n", currentTimeUs, ultrasound1DistanceData, ultrasound2DistanceData, ultrasound3DistanceData, 
+					ultrasound4DistanceData, ultrasound5DistanceData, ultrasound6DistanceData, Encoder1, motor1Pwm, Encoder2, motor2Pwm, gyro.gyroADCf[Y], 
+					gyro.gyroADCf[Z], attitude.raw[Y]);
+#endif
 
 	OLED_Refresh_Gram();
 }

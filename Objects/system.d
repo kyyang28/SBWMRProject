@@ -1,5 +1,5 @@
-.\objects\system.o: src\quad\drivers\system.c
-.\objects\system.o: src\quad\drivers\system.h
+.\objects\system.o: src\quad\drivers\SYSTEM\system.c
+.\objects\system.o: src\quad\drivers\SYSTEM\system.h
 .\objects\system.o: .\src\lib\STM32F4xx_StdPeriph_Drivers\inc\stm32f4xx_rcc.h
 .\objects\system.o: .\src\lib\CMSIS\CM4\DeviceSupport\ST\STM32F4xx\stm32f4xx.h
 .\objects\system.o: .\src\lib\CMSIS\CM4\CoreSupport\core_cm4.h
@@ -22,5 +22,5 @@
 .\objects\system.o: .\src\lib\STM32F4xx_StdPeriph_Drivers\inc\stm32f4xx_pwr.h
 .\objects\system.o: .\src\lib\STM32F4xx_StdPeriph_Drivers\inc\misc.h
 .\objects\system.o: .\src\lib\CMSIS\CM4\DeviceSupport\ST\STM32F4xx\stm32f4xx_conf.h
-.\objects\system.o: src\quad\drivers\nvic.h
+.\objects\system.o: .\src\quad\drivers\EXTI\nvic.h
 .\objects\system.o: .\src\quad\build\atomic.h

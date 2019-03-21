@@ -91,7 +91,8 @@ int fputc(int ch, FILE *f)
 //	gpsWrite(ch);
 //	rxSerial1TestWrite(ch);
 	rxSerial3TestWrite(ch);
-    
+//    bluetoothSerial6Write(ch);
+	
     /* If everything is OK, you have to return character written */
     return ch;
     /* If character is not correct, you can return EOF (-1) to stop writing */
@@ -107,6 +108,7 @@ int fputc(int ch, FILE *f)
 PUTCHAR_PROTOTYPE
 {
 	rxSerial3TestWrite(ch);
+//	bluetoothSerial6Write(ch);
 	return ch;
 }
 #endif
@@ -136,11 +138,12 @@ int main(void)
 
 	/* Initialise debugging serial port */
 //	rxSerial1TestInit();
-	rxSerial3TestInit();
 	
 	/* Initialise bluetooth serial */
 	bluetoothSerial6Init();
-	
+
+	rxSerial3TestInit();
+
 	/* Write masterConfig info into FLASH EEPROM
 	 *
 	 * TODO: (ISSUE) After calling writeEEPROM() function, the program will not be running when STM32F4 board is powered on

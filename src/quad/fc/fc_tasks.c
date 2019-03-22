@@ -510,13 +510,14 @@ static int velocityControlSBWMR(int leftEncoder, int rightEncoder)
 	static float velocityPwm, encoderError, encoder, encoderIntegral;
 //	float Kp = 144.75;		// leftEncoder + rightEncoder with dividing by 2 (using TOP quadcopter landing plate)
 //	float Kp = 102.75;		// leftEncoder + rightEncoder with dividing by 2 (w/o using TOP quadcopter landing plate)
-	float Kp = 108.75;		// leftEncoder + rightEncoder with dividing by 2 (w/o using TOP quadcopter landing plate)
-//	float Kp = 48.0;		// leftEncoder + rightEncoder w/o dividing by 2
+	float Kp = 108.0;		// leftEncoder + rightEncoder with dividing by 2 (w/o using TOP quadcopter landing plate)
+//	float Kp = 58.0;		// leftEncoder + rightEncoder w/o dividing by 2
 //	float Kp = 75.0;		// leftEncoder + rightEncoder w/o dividing by 2
 //	float Kp = 80.0;		// leftEncoder + rightEncoder w/o dividing by 2
 //	float Kp = 58.75;		// leftEncoder + rightEncoder w/o dividing by 2
 //	float Ki = 0.5;
 	float Ki = Kp / 200;
+//	float Ki = 0.33;
 	
 	if (driveForward == 1 && driveReverse == 0 && turnLeft == 0 && turnRight == 0) {
 //		printf("forward: %d, %d\r\n", leftEncoder, rightEncoder);

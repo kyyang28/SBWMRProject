@@ -270,15 +270,15 @@ int main(void)
 	/* Latch active features again as some of them are modified by init() */
 	latchActiveFeatures();
 	
-    /* Initialise all the RTOS tasks */
-    fcTasksInit();
+	/* Initialise all the RTOS tasks */
+	fcTasksInit();
 	
 	systemState |= SYSTEM_STATE_ALL_READY;
     
 	/* Main loop */
 	while (1) {
 
-        main_process();
+		main_process();
 
 	}
 //	return 0;

@@ -293,6 +293,7 @@ static void buttonModeSwitchPollOps(button_t *buttonModeSwitchConfig)
 		/* Activate the motors */
 		if (stopFlag == false) {
 #ifdef BLACKBOX
+			/* ONLY start blackbox whenever motors are activated */
 			if (feature(FEATURE_BLACKBOX)) {
 //				printf("%s, %d\r\n", __FUNCTION__, __LINE__);
 				startBlackbox();

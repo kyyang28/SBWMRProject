@@ -60,6 +60,7 @@
 .\objects\main.o: .\src\quad\io\motors.h
 .\objects\main.o: .\src\quad\flight\mixer.h
 .\objects\main.o: .\src\quad\flight\pid.h
+.\objects\main.o: .\src\quad\common\filter.h
 .\objects\main.o: .\src\quad\common\maths.h
 .\objects\main.o: F:\Keil_v5\ARM\ARMCC\Bin\..\include\math.h
 .\objects\main.o: .\src\quad\rx\rx.h

@@ -56,7 +56,7 @@
 //#include "blackbox.h"
 //#include "blackbox_io.h"
 
-//#include "pid.h"
+#include "pid.h"
 
 #include "runtime_config.h"
 #include "imu.h"
@@ -266,6 +266,8 @@ int main(void)
 	/* set accelerometer calibration cycles */
 	accSetCalibrationCycles(CALIBRATING_ACC_CYCLES);
 #endif
+	
+	pidInitFilters();
 	
 	/* Latch active features again as some of them are modified by init() */
 	latchActiveFeatures();

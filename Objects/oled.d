@@ -60,6 +60,7 @@
 .\objects\oled.o: .\src\quad\io\motors.h
 .\objects\oled.o: .\src\quad\flight\mixer.h
 .\objects\oled.o: .\src\quad\flight\pid.h
+.\objects\oled.o: .\src\quad\common\filter.h
 .\objects\oled.o: .\src\quad\common\maths.h
 .\objects\oled.o: F:\Keil_v5\ARM\ARMCC\Bin\..\include\math.h
 .\objects\oled.o: .\src\quad\rx\rx.h

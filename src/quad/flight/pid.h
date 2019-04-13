@@ -3,6 +3,7 @@
 
 #include <stdint.h>
 #include "acceleration.h"
+#include "filter.h"
 
 #define MAX_PID_PROCESS_DENOM			16
 #define PIDSUM_LIMIT					0.5f
@@ -71,6 +72,16 @@ typedef struct pidConfig_s {
     uint8_t pid_process_denom;                      // Processing denominator for PID controller vs gyro sampling frequency
 }pidConfig_t;
 
+
+#if 1
+
+extern void *speedLpfFilter;
+extern filterApplyFnPtr speedLpfFilterApplyFn;
+
+void pidInitFilters(void);
+
+#else
+
 /* Initialisations */
 void pidSetTargetLooptime(uint32_t pidLooptime);
 void pidSetItermAccelerator(float newItermAccelerator);
@@ -81,5 +92,7 @@ void pidStabilisationState(pidStabilisationState_e pidControllerState);
 
 /* PID control algorithms */
 void pidController(const pidProfile_t *pidProfile, const rollAndPitchTrims_t *angleTrim);
+
+#endif
 
 #endif	// __PID_H

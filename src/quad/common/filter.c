@@ -88,8 +88,10 @@ float filterGetNotchQ(uint16_t centerFreq, uint16_t cutoff)
 /* PT1 filter functions
  * Referenced by https://en.wikipedia.org/wiki/Low-pass_filter, pseudocode part
  */
-void pt1FilterInit(pt1Filter_t *filter, uint8_t f_cut, float dT)
+//void pt1FilterInit(pt1Filter_t *filter, float timeConstantInSec, float dT)
+void pt1FilterInit(pt1Filter_t *filter, float f_cut, float dT)
 {
+//	filter->RC = timeConstantInSec;				// timeConstantInSec = 1.0f / (2.0f * M_PI_FLOAT * f_cut)
 	filter->RC = 1.0f / (2.0f * M_PI_FLOAT * f_cut);
 	filter->dT = dT;
 	filter->k = filter->dT / (filter->RC + filter->dT);

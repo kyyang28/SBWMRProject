@@ -59,6 +59,7 @@
 .\objects\config.o: .\src\quad\io\motors.h
 .\objects\config.o: .\src\quad\flight\mixer.h
 .\objects\config.o: .\src\quad\flight\pid.h
+.\objects\config.o: .\src\quad\common\filter.h
 .\objects\config.o: .\src\quad\common\maths.h
 .\objects\config.o: F:\Keil_v5\ARM\ARMCC\Bin\..\include\math.h
 .\objects\config.o: .\src\quad\rx\rx.h
@@ -77,7 +78,6 @@
 .\objects\config.o: .\src\quad\drivers\TIMER\timer.h
 .\objects\config.o: .\src\quad\drivers\RCC\rcc.h
 .\objects\config.o: .\src\quad\drivers\RCC\RCCTypes.h
-.\objects\config.o: .\src\quad\common\filter.h
 .\objects\config.o: .\src\quad\target\13-PID\common.h
 .\objects\config.o: .\src\quad\build\debug.h
 .\objects\config.o: src\quad\fc\fc_rc.h

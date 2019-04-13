@@ -232,7 +232,12 @@ void uartIrqHandler(uartPort_t *s)
 		if (s->port.rxCallback) {
 			s->port.rxCallback(s->USARTx->DR);
 		}else {
-//			printf("data: %u\r\n", s->USARTx->DR);
+//			if (s->USARTx->DR == '$') {
+//				printf("\r\n");
+//			} else {
+//				printf("%c,", s->USARTx->DR);
+//			}
+#if 1
 			switch (s->USARTx->DR) {
 				/* Stop */
 				case 48:
@@ -274,6 +279,7 @@ void uartIrqHandler(uartPort_t *s)
 					turnRight = 1;
 					break;
 			}
+#endif			
 			
 			s->port.rxBuffer[s->port.rxBufferHead] = s->USARTx->DR;
 			s->port.rxBufferHead = (s->port.rxBufferHead + 1) % s->port.rxBufferSize;

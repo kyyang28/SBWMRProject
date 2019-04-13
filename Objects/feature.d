@@ -57,6 +57,7 @@
 .\objects\feature.o: .\src\quad\io\motors.h
 .\objects\feature.o: .\src\quad\flight\mixer.h
 .\objects\feature.o: .\src\quad\flight\pid.h
+.\objects\feature.o: .\src\quad\common\filter.h
 .\objects\feature.o: .\src\quad\common\maths.h
 .\objects\feature.o: F:\Keil_v5\ARM\ARMCC\Bin\..\include\math.h
 .\objects\feature.o: .\src\quad\rx\rx.h

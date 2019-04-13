@@ -58,6 +58,7 @@
 .\objects\blackbox.o: .\src\quad\io\motors.h
 .\objects\blackbox.o: .\src\quad\flight\mixer.h
 .\objects\blackbox.o: .\src\quad\flight\pid.h
+.\objects\blackbox.o: .\src\quad\common\filter.h
 .\objects\blackbox.o: .\src\quad\common\maths.h
 .\objects\blackbox.o: F:\Keil_v5\ARM\ARMCC\Bin\..\include\math.h
 .\objects\blackbox.o: .\src\quad\rx\rx.h

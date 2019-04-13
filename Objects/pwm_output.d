@@ -56,3 +56,4 @@
 .\objects\pwm_output.o: .\src\quad\common\axis.h
 .\objects\pwm_output.o: .\src\quad\drivers\IMU\accgyro_mpu.h
 .\objects\pwm_output.o: .\src\quad\common\time.h
+.\objects\pwm_output.o: .\src\quad\common\filter.h

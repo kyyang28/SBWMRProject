@@ -47,6 +47,7 @@
 .\objects\imu.o: .\src\quad\drivers\resource.h
 .\objects\imu.o: .\src\quad\common\axis.h
 .\objects\imu.o: .\src\quad\drivers\IMU\accgyro_mpu.h
+.\objects\imu.o: .\src\quad\common\filter.h
 .\objects\imu.o: .\src\quad\fc\runtime_config.h
 .\objects\imu.o: .\src\quad\common\maths.h
 .\objects\imu.o: F:\Keil_v5\ARM\ARMCC\Bin\..\include\math.h

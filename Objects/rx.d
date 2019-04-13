@@ -51,6 +51,7 @@
 .\objects\rx.o: .\src\quad\common\axis.h
 .\objects\rx.o: .\src\quad\drivers\IMU\accgyro_mpu.h
 .\objects\rx.o: .\src\quad\common\time.h
+.\objects\rx.o: .\src\quad\common\filter.h
 .\objects\rx.o: .\src\quad\common\maths.h
 .\objects\rx.o: F:\Keil_v5\ARM\ARMCC\Bin\..\include\math.h
 .\objects\rx.o: .\src\quad\rx\rx.h

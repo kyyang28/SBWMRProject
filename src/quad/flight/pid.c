@@ -1,21 +1,54 @@
 
 #include <stdio.h>          	// just for debugging purposes
 
-#include "pid.h"
-#include "fc_rc.h"
-#include "mixer.h"
-#include "filter.h"
+#include "pid.h"				// including filter.h
+//#include "fc_rc.h"
+//#include "mixer.h"
+//#include "filter.h"
 #include "maths.h"				// MIN, MAX
 #include "runtime_config.h"
 
 #include "configMaster.h"   	// just for testing purposes
 
-//#define TESTING_TPA
+#if 1
 
-//#if defined(TESTING_TPA)
-//#include "rx.h"
-//extern int16_t rcData[MAX_SUPPORTED_RC_CHANNEL_COUNT];
-//#endif
+static float dT;
+
+void *speedLpfFilter;
+
+static float speedPIDLoopTime = 10;						// 10 ms
+static float speedFilterCutOffFrequencyHz = 6.3662;			// time constant filter->RC = 1 / (2 * pi * 6.3662) = 0.024999991 = 0.025 seconds = 25 ms
+//static float speedFilterCutOffFrequencyHz = 5.3052;			// time constant filter->RC = 1 / (2 * pi * 5.3052) = 0.0299998 = 0.030 seconds = 30 ms
+//static float speedFilterCutOffFrequencyHz = 4.5473;			// time constant filter->RC = 1 / (2 * pi * 4.5473) = 0.0349999 = 0.035 seconds = 35 ms
+//static float speedFilterCutOffFrequencyHz = 2.2736;			// time constant filter->RC = 1 / (2 * pi * 2.2736) = 0.0700013 = 0.070 seconds = 70 ms
+//static float speedFilterCutOffFrequencyHz = 1.2243;			// time constant filter->RC = 1 / (2 * pi * 1.2243) = 0.129997 = 0.130 seconds = 130 ms
+//static float speedFilterCutOffFrequencyHz = 40.9244;			// time constant filter->RC = 1 / (2 * pi * 40.9244) = 0.003889 = 0.070 seconds = 3.889 ms
+
+//static float speedTimeConstantInSec = 0.026;				// in sec
+
+filterApplyFnPtr speedLpfFilterApplyFn;
+
+void pidInitFilters(void)
+{
+	static pt1Filter_t speedFilterPt1;
+	
+	/* 1. PID Nyquist frequency, no rounding needed
+	 *
+	 * pidNyquistFrequency unit in hz, pidNyquistFrequency = (1.0f / 0.0005) / 2 = 2000 / 2 = 1000 for F210 racing quad
+	 * pidNyquistFrequency unit in hz, pidNyquistFrequency = (1.0f / 0.004) / 2 = 250 / 2 = 125 for F450 normal quad
+	 */
+//	uint32_t pidNyquistFrequency = (1.0f / dT) / 2;
+
+	speedLpfFilterApplyFn = (filterApplyFnPtr)pt1FilterApply;
+	const float speedDt = speedPIDLoopTime * 0.001f;		// 0.001f convert from milliseconds to seconds, 5 * 0.001 = 0.005
+	
+	speedLpfFilter = &speedFilterPt1;
+	
+//	pt1FilterInit(speedLpfFilter, speedTimeConstantInSec, speedDt);
+	pt1FilterInit(speedLpfFilter, speedFilterCutOffFrequencyHz, speedDt);
+}
+
+#else
 
 uint32_t targetPidLooptime;
 
@@ -529,3 +562,5 @@ void pidController(const pidProfile_t *pidProfile, const rollAndPitchTrims_t *an
 		}
 	}
 }
+
+#endif

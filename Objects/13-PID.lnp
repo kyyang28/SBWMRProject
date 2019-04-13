@@ -46,6 +46,7 @@
 ".\objects\asyncfatfs.o"
 ".\objects\fat_standard.o"
 ".\objects\imu.o"
+".\objects\pid.o"
 ".\objects\config_eeprom.o"
 ".\objects\feature.o"
 ".\objects\acceleration.o"

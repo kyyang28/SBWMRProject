@@ -22,6 +22,7 @@
 #include "ultrasound.h"
 #include "asyncfatfs.h"
 #include "blackbox.h"
+#include "pid.h"
 
 //#define TASKS_LEDS_TESTING
 
@@ -36,7 +37,12 @@ int Encoder1, Encoder2;
 int stabilisePwmVal, velocityPwmVal, yawPwmVal;
 int motor1Pwm, motor2Pwm;
 int yawMagnitude = 95;
-int speedLimit = 4000;
+//int speedLimit = 10000;
+//int speedLimit = 6000;
+//float speedConfig = 70.0;
+int speedLimit = 7000;
+float speedConfig = 65.0;
+//float speedConfig = 80.0;
 //int yawMagnitude = 45;
 uint32_t stationaryFlag = 0;
 float velocityUpdatedMovement = 0.0f;
@@ -107,6 +113,8 @@ cfTask_t cfTasks[TASK_COUNT] = {
     [TASK_MOTORENCODER] = {
         .taskName = "MOTOR_ENCODER",
         .taskFunc = taskMotorEncoder,
+//        .desiredPeriod = TASK_PERIOD_HZ(250),            	// 1000000 / 250 = 4000 us = 4 ms		does not work!!!!!
+//       .desiredPeriod = TASK_PERIOD_HZ(200),            	// 1000000 / 200 = 5000 us = 5 ms		does not work!!!!!
         .desiredPeriod = TASK_PERIOD_HZ(100),            	// 1000000 / 100 = 10000 us = 10 ms
         .staticPriority = TASK_PRIORITY_REALTIME,			// TASK_PRIORITY_REALTIME = 6
     },
@@ -400,15 +408,24 @@ bool activateMotors(int pitchAngle)
 //	printf("pitchAn7gle: %d\r\n", pitchAngle);
 
 	/* If external button is not pressed after powered up (i.e. balance mode is not turned on), 
-	 * pitchAngle is greater or less than 50 and -50, 
+	 * pitchAngle is greater or less than 65 and -65, 
 	 * motor is not activated.
 	 *
 	 * then update the isMotorEnabled to false (i.e. deactivate the motors), otherwise, activate the motors
 	 */
-	if ((stopFlag == true) || (pitchAngle < -65) || (pitchAngle > 65) || (isMotorActivated == false)) {
+	if ((stopFlag == true) || (isMotorActivated == false)) {
+//	if ((stopFlag == true) || (pitchAngle < -90) || (pitchAngle > 90) || (isMotorActivated == false)) {
+//	if ((stopFlag == true) || (pitchAngle < -65) || (pitchAngle > 65) || (isMotorActivated == false)) {
 //		printf("motor stop!\r\n");
+		if (stopFlag == true)
+			LED3_ON;
+		
+		if ((pitchAngle < -90) || (pitchAngle > 90))
+			LED5_ON;
+		
 		isMotorEnabled = false;			// deactivate motors
 	} else {
+		LED3_OFF;
 		isMotorEnabled = true;			// activate motors
 	}
 	
@@ -492,8 +509,13 @@ void updateMotorPwm(int *motorPwm1, int *motorPwm2)
 static int stabilisationControlSBWMR(int pitchAngle, float gyroY)
 {
 	int errorAngle;
+	
+	/* For Dagu Wild Thumper Wheels */
+//	int Kp = 195;				// 195 * 0.6 = 117
+//	float Kd = 27.0f;			// 55 * 0.6 = 33
+
+	/* For small wheels */
 	int Kp = 320;				// 500 * 0.7 = 350
-//	float Kd = 30.0;			// 50 * 0.7 = 35
 	float Kd = 31.8;			// 55 * 0.6 = 33
 	float stabilisePwm;
 	
@@ -505,23 +527,35 @@ static int stabilisationControlSBWMR(int pitchAngle, float gyroY)
 	return (int)stabilisePwm;
 }
 
+static float cutoffFreq = 0.72f;
+
 static int velocityControlSBWMR(int leftEncoder, int rightEncoder)
 {
 	static float velocityPwm, encoderError, encoder, encoderIntegral;
 //	float Kp = 144.75;		// leftEncoder + rightEncoder with dividing by 2 (using TOP quadcopter landing plate)
 //	float Kp = 102.75;		// leftEncoder + rightEncoder with dividing by 2 (w/o using TOP quadcopter landing plate)
-	float Kp = 108.0;		// leftEncoder + rightEncoder with dividing by 2 (w/o using TOP quadcopter landing plate)
 //	float Kp = 58.0;		// leftEncoder + rightEncoder w/o dividing by 2
 //	float Kp = 75.0;		// leftEncoder + rightEncoder w/o dividing by 2
 //	float Kp = 80.0;		// leftEncoder + rightEncoder w/o dividing by 2
 //	float Kp = 58.75;		// leftEncoder + rightEncoder w/o dividing by 2
 //	float Ki = 0.5;
-	float Ki = Kp / 200;
 //	float Ki = 0.33;
+
+	/* For Dagu Wild Thumper Wheels */
+//	float Kp = 190.0f;
+//	float Ki = 0.95f;
+//	float Kp = 198.0f;				// 2nd try
+//	float Ki = 1.01f;
+//	float Kp = 202.0f;				// 1st try
+//	float Ki = Kp / 200;
+	
+	/* For small wheels */
+	float Kp = 122.0;		// leftEncoder + rightEncoder with dividing by 2 (w/o using TOP quadcopter landing plate)
+	float Ki = Kp / 200;
 	
 	if (driveForward == 1 && driveReverse == 0 && turnLeft == 0 && turnRight == 0) {
 //		printf("forward: %d, %d\r\n", leftEncoder, rightEncoder);
-		velocityUpdatedMovement = -80.0;			// negative value representing moving forward
+		velocityUpdatedMovement = -speedConfig;			// negative value representing moving forward
 //		velocityUpdatedMovement = -50.0;			// negative value representing moving forward
 //		stationaryFlag = 0;
 
@@ -532,7 +566,7 @@ static int velocityControlSBWMR(int leftEncoder, int rightEncoder)
 		}
 #endif
 
-#if 0		
+#if 0
 		if (ultrasound2DistanceData < 60) {
 //			speedLimit = 12000;
 			velocityUpdatedMovement = -40.0;
@@ -558,7 +592,7 @@ static int velocityControlSBWMR(int leftEncoder, int rightEncoder)
 		
 	} else if (driveForward == 0 && driveReverse == 1 && turnLeft == 0 && turnRight == 0) {
 //		printf("reverse: %d, %d\r\n", leftEncoder, rightEncoder);
-		velocityUpdatedMovement = 80.0;			// positive value representing moving backward
+		velocityUpdatedMovement = speedConfig;			// positive value representing moving backward
 //		velocityUpdatedMovement = 50.0;			// positive value representing moving backward
 //		stationaryFlag = 0;
 
@@ -582,14 +616,19 @@ static int velocityControlSBWMR(int leftEncoder, int rightEncoder)
 	encoderError = 0.5f * (leftEncoder + rightEncoder) - velocitySetpoint;		// velocitySetpoint is set to 0
 	
 	/* Low pass filter */
-	encoder *= 0.7f;
-	encoder += encoderError * 0.3f;
+	encoder *= cutoffFreq;
+	encoder += encoderError * (1.0f - cutoffFreq);
+
+//	encoder = speedLpfFilterApplyFn(speedLpfFilter, encoderError);
 	
 	encoderIntegral += encoder;					// Get displacement of motor rotation by integrating encoder speed using 10ms period
 	
 	encoderIntegral = encoderIntegral - velocityUpdatedMovement;
 	
-	/* 4000 */
+//	printf("encoderIntegral: %.4f\r\n", encoderIntegral);
+//	printf("%d\t\t%d\t\t%.4f\r\n", leftEncoder, rightEncoder, encoderIntegral);
+	
+	/* 7000 */
 	if (encoderIntegral > speedLimit) {
 		encoderIntegral = speedLimit;
 	}
@@ -613,8 +652,12 @@ static int yawControlSBWMR(float gyroZ, int leftEncoder, int rightEncoder)
 	static float yawError, yawPwm, encoderTmp1, yawCnt;
 	static float yawAdjust = 0.9f;
 
-//	float Kp = 25.0f;
-//	float Kd = 0.0f;
+	/* For Dagu Wild Thumper Wheels */
+//	float Kp = 35.0f;
+//	float Kd = 4.0f;
+//	float Kd = 8.0f;
+
+	/* For small wheels */
 	float Kp = 57.0f;
 	float Kd = 8.4f;
 
@@ -680,8 +723,8 @@ static int yawControlSBWMR(float gyroZ, int leftEncoder, int rightEncoder)
 //		Kd = 0;
 //	}
 
-	yawPwm = yawError * Kp + gyroZ * Kd;
-//	yawPwm = Kp * yawError + Kd * gyroZ;
+//	yawPwm = yawError * Kp + gyroZ * Kd;
+	yawPwm = Kp * yawError + Kd * gyroZ;
 
 	return yawPwm;
 }
@@ -830,6 +873,8 @@ static void taskMotorEncoder(timeUs_t currentTimeUs)
 		/* Velocity control */
 		velocityPwmVal = velocityControlSBWMR(Encoder1, Encoder2);
 		
+//		printf("velocityPwmVal: %d\r\n", velocityPwmVal);
+		
 		/* Yaw control */
 		yawPwmVal = yawControlSBWMR(gyro.gyroADCf[Z], Encoder1, Encoder2);
 		
@@ -909,6 +954,8 @@ static void taskUltrasound6ReadData(timeUs_t currentTimeUs)
 	
 //	printf("d6: %d\r\n", ultrasound6DistanceData);
 }
+
+static char dataLog[500];
 
 static void taskOLEDDisplay(timeUs_t currentTimeUs)
 {
@@ -1021,9 +1068,21 @@ static void taskOLEDDisplay(timeUs_t currentTimeUs)
 	/* Display ultrasound sensor data 6 */
 	OLED_ShowNumber(95, 50, ultrasound6DistanceData, 3, 12);
 
+#if 1
+	sprintf(dataLog, "%.4f,%.4f,%.4f,%.4f,%.4f,%.4f,%.4f,%.4f,%.4f,%.4f,%.4f,%.4f,%.4f,%.4f", (float)ultrasound1DistanceData, (float)ultrasound2DistanceData, (float)ultrasound3DistanceData, (float)ultrasound4DistanceData, (float)ultrasound5DistanceData, (float)ultrasound6DistanceData, (float)Encoder1, (float)motor1Pwm, (float)Encoder2, (float)motor2Pwm, gyro.gyroADCf[Y], gyro.gyroADCf[Z], (float)attitude.raw[Y], (float)attitude.raw[Z]);
+	printf("%s\r\n", dataLog);
 //	printf("%u,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%.4f,%.4f,%d\r\n", currentTimeUs, ultrasound1DistanceData, ultrasound2DistanceData, ultrasound3DistanceData, 
 //					ultrasound4DistanceData, ultrasound5DistanceData, ultrasound6DistanceData, Encoder1, motor1Pwm, Encoder2, motor2Pwm, gyro.gyroADCf[Y], 
 //					gyro.gyroADCf[Z], attitude.raw[Y]);
+#else
+//	printf("%d,%d,%d\r\n", attitude.raw[X], attitude.raw[Y], attitude.raw[Z]);
+//	printf("%.4f,%.4f,%.4f,%.4f\r\n", gyro.gyroADCf[Y], gyro.gyroADCf[Z], (float)attitude.raw[Y], (float)attitude.raw[Z]);
+//	printf("%.4f,%.4f,%.4f,%.4f\r\n", (float)ultrasound1DistanceData, (float)ultrasound2DistanceData, (float)ultrasound3DistanceData, (float)ultrasound4DistanceData);
+//	sprintf(dataLog, "%.4f,%.4f,%.4f,%.4f,%.4f,%.4f", (float)ultrasound1DistanceData, (float)ultrasound2DistanceData, (float)ultrasound3DistanceData, (float)ultrasound4DistanceData, (float)ultrasound5DistanceData, (float)ultrasound6DistanceData);
+//	sprintf(dataLog, "%.4f,%.4f,%.4f,%.4f", (float)ultrasound1DistanceData, (float)ultrasound2DistanceData, (float)ultrasound3DistanceData, (float)ultrasound4DistanceData);
+	sprintf(dataLog, "%.4f,%.4f,%.4f,%.4f,%.4f,%.4f,%.4f,%.4f,%.4f,%.4f", gyro.gyroADCf[Y], gyro.gyroADCf[Z], (float)attitude.raw[Y], (float)attitude.raw[Z], (float)ultrasound1DistanceData, (float)ultrasound2DistanceData, (float)ultrasound3DistanceData, (float)ultrasound4DistanceData, (float)ultrasound5DistanceData, (float)ultrasound6DistanceData);
+	printf("%s\r\n", dataLog);
+#endif
 
 	OLED_Refresh_Gram();
 }

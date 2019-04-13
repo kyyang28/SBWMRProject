@@ -56,3 +56,4 @@
 .\objects\rx_pwm.o: .\src\quad\common\axis.h
 .\objects\rx_pwm.o: .\src\quad\drivers\IMU\accgyro_mpu.h
 .\objects\rx_pwm.o: .\src\quad\common\time.h
+.\objects\rx_pwm.o: .\src\quad\common\filter.h

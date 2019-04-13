@@ -59,6 +59,7 @@
 .\objects\config_eeprom.o: .\src\quad\io\motors.h
 .\objects\config_eeprom.o: .\src\quad\flight\mixer.h
 .\objects\config_eeprom.o: .\src\quad\flight\pid.h
+.\objects\config_eeprom.o: .\src\quad\common\filter.h
 .\objects\config_eeprom.o: .\src\quad\common\maths.h
 .\objects\config_eeprom.o: F:\Keil_v5\ARM\ARMCC\Bin\..\include\math.h
 .\objects\config_eeprom.o: .\src\quad\rx\rx.h

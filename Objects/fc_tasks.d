@@ -56,6 +56,7 @@
 .\objects\fc_tasks.o: .\src\quad\drivers\EXTI\exti.h
 .\objects\fc_tasks.o: .\src\quad\common\axis.h
 .\objects\fc_tasks.o: .\src\quad\drivers\IMU\accgyro_mpu.h
+.\objects\fc_tasks.o: .\src\quad\common\filter.h
 .\objects\fc_tasks.o: .\src\quad\common\maths.h
 .\objects\fc_tasks.o: .\src\quad\rx\rx.h
 .\objects\fc_tasks.o: .\src\quad\build\debug.h

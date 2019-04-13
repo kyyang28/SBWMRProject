@@ -42,7 +42,8 @@ float biquadFilterApply(biquadFilter_t *filter, float input);
 float filterGetNotchQ(uint16_t centerFreq, uint16_t cutoff);
 
 /* PT1 filter functions */
-void pt1FilterInit(pt1Filter_t *filter, uint8_t f_cut, float dT);
+void pt1FilterInit(pt1Filter_t *filter, float f_cut, float dT);
+//void pt1FilterInit(pt1Filter_t *filter, float timeConstantInSec, float dT);
 float pt1FilterApply(pt1Filter_t *filter, float input);
 float pt1FilterApply4(pt1Filter_t *filter, float input, uint8_t f_cut, float dT);
 

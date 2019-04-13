@@ -56,5 +56,6 @@
 .\objects\scheduler.o: .\src\quad\drivers\EXTI\exti.h
 .\objects\scheduler.o: .\src\quad\common\axis.h
 .\objects\scheduler.o: .\src\quad\drivers\IMU\accgyro_mpu.h
+.\objects\scheduler.o: .\src\quad\common\filter.h
 .\objects\scheduler.o: .\src\quad\rx\rx.h
 .\objects\scheduler.o: .\src\quad\build\debug.h

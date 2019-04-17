@@ -23,6 +23,7 @@
 #include "asyncfatfs.h"
 #include "blackbox.h"
 #include "pid.h"
+#include "ACS712.h"
 
 //#define TASKS_LEDS_TESTING
 
@@ -58,6 +59,8 @@ extern uint8_t driveForward, driveReverse, turnLeft, turnRight;
 bool stopFlag = true;
 bool isCollisionAvoidanceModeActivated = false;			// collision avoidance is switched off by default
 
+static char dataLog[500];
+
 static int32_t ultrasound1DistanceData = ULTRASOUND_OUT_OF_RANGE;
 static int32_t ultrasound2DistanceData = ULTRASOUND_OUT_OF_RANGE;
 static int32_t ultrasound3DistanceData = ULTRASOUND_OUT_OF_RANGE;
@@ -77,6 +80,8 @@ static void taskUltrasound4ReadData(timeUs_t currentTimeUs);
 static void taskUltrasound5ReadData(timeUs_t currentTimeUs);
 static void taskUltrasound6ReadData(timeUs_t currentTimeUs);
 static void taskDataLogger(timeUs_t currentTimeUs);
+static void taskLeftMotorCurrentMeter(timeUs_t currentTimeUs);
+static void taskRightMotorCurrentMeter(timeUs_t currentTimeUs);
 //static void taskBluetoothReceive(timeUs_t currentTimeUs);
 
 /* Tasks initialisation */
@@ -212,6 +217,24 @@ cfTask_t cfTasks[TASK_COUNT] = {
 		.taskFunc = taskDataLogger,
 		.desiredPeriod = TASK_PERIOD_HZ(250),				// 1000000 / 250 = 4000 us = 4 ms = 250 Hz
 		.staticPriority = TASK_PRIORITY_MEDIUM,				// TASK_PRIORITY_MEDIUM = 1
+	},
+#endif
+
+#if defined(USE_ADC)
+	[TASK_LEFT_MOTOR_CURRENT_METER] = {
+		.taskName = "LEFT_MOTOR_CURRENT_METER",
+		.taskFunc = taskLeftMotorCurrentMeter,
+		.desiredPeriod = TASK_PERIOD_HZ(100),				// 50 Hz = 1000000 / 100 = 10000 us = 10 ms
+//		.desiredPeriod = TASK_PERIOD_HZ(50),				// 50 Hz = 1000000 / 50 = 20000 us = 20 ms
+		.staticPriority = TASK_PRIORITY_MEDIUM,
+	},
+	
+	[TASK_RIGHT_MOTOR_CURRENT_METER] = {
+		.taskName = "RIGHT_MOTOR_CURRENT_METER",
+		.taskFunc = taskRightMotorCurrentMeter,
+		.desiredPeriod = TASK_PERIOD_HZ(100),				// 50 Hz = 1000000 / 100 = 10000 us = 10 ms
+//		.desiredPeriod = TASK_PERIOD_HZ(50),				// 50 Hz = 1000000 / 50 = 20000 us = 20 ms
+		.staticPriority = TASK_PRIORITY_MEDIUM,
 	},
 #endif
 };
@@ -435,10 +458,10 @@ bool activateMotors(int pitchAngle)
 
 void deactivateMotors(void)
 {
-	IO_t l_AIN1 = IOGetByTag(DCBrushedMotorConfig()->AIN1);		// PE3
-	IO_t l_AIN2 = IOGetByTag(DCBrushedMotorConfig()->AIN2);		// PE4
-	IO_t l_BIN1 = IOGetByTag(DCBrushedMotorConfig()->BIN1);		// PC13
-	IO_t l_BIN2 = IOGetByTag(DCBrushedMotorConfig()->BIN2);		// PC15	
+	IO_t l_AIN1 = IOGetByTag(DCBrushedMotorConfig()->AIN1);		// PB13
+	IO_t l_AIN2 = IOGetByTag(DCBrushedMotorConfig()->AIN2);		// PB12
+	IO_t l_BIN1 = IOGetByTag(DCBrushedMotorConfig()->BIN1);		// PB14
+	IO_t l_BIN2 = IOGetByTag(DCBrushedMotorConfig()->BIN2);		// PB15	
 
 	/* Disable two motors */
 	IOLo(l_AIN1);
@@ -450,10 +473,10 @@ void deactivateMotors(void)
 void updateMotorPwm(int *motorPwm1, int *motorPwm2)
 {
 //	volatile uint32_t *motor2PwmAddr = (volatile uint32_t *)((volatile char *)&TIM1->CCR1 + 0x4);
-	IO_t l_AIN1 = IOGetByTag(DCBrushedMotorConfig()->AIN1);		// PE3
-	IO_t l_AIN2 = IOGetByTag(DCBrushedMotorConfig()->AIN2);		// PE4
-	IO_t l_BIN1 = IOGetByTag(DCBrushedMotorConfig()->BIN1);		// PC13
-	IO_t l_BIN2 = IOGetByTag(DCBrushedMotorConfig()->BIN2);		// PC15
+	IO_t l_AIN1 = IOGetByTag(DCBrushedMotorConfig()->AIN1);		// PB13
+	IO_t l_AIN2 = IOGetByTag(DCBrushedMotorConfig()->AIN2);		// PB12
+	IO_t l_BIN1 = IOGetByTag(DCBrushedMotorConfig()->BIN1);		// PB14
+	IO_t l_BIN2 = IOGetByTag(DCBrushedMotorConfig()->BIN2);		// PB15
 
 //	printf("motor pwm: %d\r\n", motor);
 	if (*motorPwm1 > 0) {
@@ -510,15 +533,25 @@ void updateMotorPwm(int *motorPwm1, int *motorPwm2)
 static int stabilisationControlSBWMR(int pitchAngle, float gyroY)
 {
 	int errorAngle;
+	float stabilisePwm;
 	
 	/* For Dagu Wild Thumper Wheels */
 //	int Kp = 195;				// 195 * 0.6 = 117
 //	float Kd = 27.0f;			// 55 * 0.6 = 33
 
 	/* For small wheels */
-	int Kp = 320;				// 500 * 0.7 = 350
-	float Kd = 31.8;			// 55 * 0.6 = 33
-	float stabilisePwm;
+//	int Kp = 320;				// 500 * 0.7 = 350
+//	float Kd = 31.8;			// 55 * 0.6 = 33
+
+	/* For small wheels with RPLidar */
+	int Kp = 500;				// 520 * 0.7 = 364
+	float Kd = 38.0f;			// 40.0f * 0.6 = 28.0
+	
+	/* For small wheels and taller chassis */
+//	int Kp = 343;				// 500 * 0.7 = 350
+//	float Kd = 35.0;			// 55 * 0.6 = 33
+//	int Kp = 490;				// 500 * 0.7 = 350
+//	float Kd = 50.0;			// 55 * 0.6 = 33
 	
 //	errorAngle = pitchAngle - 4;
 	errorAngle = pitchAngle - balanceSetpoint;
@@ -528,7 +561,12 @@ static int stabilisationControlSBWMR(int pitchAngle, float gyroY)
 	return (int)stabilisePwm;
 }
 
-static float cutoffFreq = 0.72f;
+//static float cutoffFreq = 0.82f;
+
+/* For small and Dagu Wild Thumper Wheels */
+static float cutoffFreq = 0.81f;
+//static float cutoffFreq = 0.84f;
+//static float cutoffFreq = 0.72f;
 
 static int velocityControlSBWMR(int leftEncoder, int rightEncoder)
 {
@@ -551,9 +589,21 @@ static int velocityControlSBWMR(int leftEncoder, int rightEncoder)
 //	float Ki = Kp / 200;
 	
 	/* For small wheels */
-	float Kp = 122.0;		// leftEncoder + rightEncoder with dividing by 2 (w/o using TOP quadcopter landing plate)
-	float Ki = Kp / 200;
-	
+//	float Kp = 122.0f;		// leftEncoder + rightEncoder with dividing by 2 (w/o using TOP quadcopter landing plate)
+//	float Ki = Kp / 200;
+
+	/* For small wheels with RPLidar */
+	float Kp = 130.0f;		// leftEncoder + rightEncoder with dividing by 2 (w/o using TOP quadcopter landing plate)
+	float Ki = 0.75f;
+//	float Kp = 122.0f;		// leftEncoder + rightEncoder with dividing by 2 (w/o using TOP quadcopter landing plate)
+//	float Ki = 0.18f;
+//	float Ki = Kp / 200;
+
+	/* For small wheels and taller chassis */
+//	float Kp = 110.0f;		// leftEncoder + rightEncoder with dividing by 2 (w/o using TOP quadcopter landing plate)
+//	float Ki = 0.2f;
+//	float Ki = Kp / 200;
+
 	if (driveForward == 1 && driveReverse == 0 && turnLeft == 0 && turnRight == 0) {
 //		printf("forward: %d, %d\r\n", leftEncoder, rightEncoder);
 		velocityUpdatedMovement = -speedConfig;			// negative value representing moving forward
@@ -956,8 +1006,6 @@ static void taskUltrasound6ReadData(timeUs_t currentTimeUs)
 //	printf("d6: %d\r\n", ultrasound6DistanceData);
 }
 
-static char dataLog[500];
-
 static void taskOLEDDisplay(timeUs_t currentTimeUs)
 {
 	static bool switchFromOADisplayFlag = false;
@@ -1069,13 +1117,20 @@ static void taskOLEDDisplay(timeUs_t currentTimeUs)
 	/* Display ultrasound sensor data 6 */
 	OLED_ShowNumber(95, 50, ultrasound6DistanceData, 3, 12);
 
+#if 0
+	sprintf(dataLog, "%.4f,%.4f", filteredLeftMotorCurrentMeterValue, filteredRightMotorCurrentMeterValue);
+	printf("%s\r\n", dataLog);
+#endif
+
 #if 1
-	sprintf(dataLog, "%.4f,%.4f,%.4f,%.4f,%.4f,%.4f,%.4f,%.4f,%.4f,%.4f,%.4f,%.4f,%.4f,%.4f", (float)ultrasound1DistanceData, (float)ultrasound2DistanceData, (float)ultrasound3DistanceData, (float)ultrasound4DistanceData, (float)ultrasound5DistanceData, (float)ultrasound6DistanceData, (float)Encoder1, (float)motor1Pwm, (float)Encoder2, (float)motor2Pwm, gyro.gyroADCf[Y], gyro.gyroADCf[Z], (float)attitude.raw[Y], (float)attitude.raw[Z]);
+	sprintf(dataLog, "%.4f,%.4f,%.4f,%.4f,%.4f,%.4f,%.4f,%.4f,%.4f,%.4f,%.4f,%.4f,%.4f,%.4f,%.4f,%.4f", (float)ultrasound1DistanceData, (float)ultrasound2DistanceData, (float)ultrasound3DistanceData, (float)ultrasound4DistanceData, (float)ultrasound5DistanceData, (float)ultrasound6DistanceData, (float)Encoder1, (float)motor1Pwm, (float)Encoder2, (float)motor2Pwm, gyro.gyroADCf[Y], gyro.gyroADCf[Z], (float)attitude.raw[Y], (float)attitude.raw[Z], filteredLeftMotorCurrentMeterValue, filteredRightMotorCurrentMeterValue);
 	printf("%s\r\n", dataLog);
 //	printf("%u,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%.4f,%.4f,%d\r\n", currentTimeUs, ultrasound1DistanceData, ultrasound2DistanceData, ultrasound3DistanceData, 
 //					ultrasound4DistanceData, ultrasound5DistanceData, ultrasound6DistanceData, Encoder1, motor1Pwm, Encoder2, motor2Pwm, gyro.gyroADCf[Y], 
 //					gyro.gyroADCf[Z], attitude.raw[Y]);
-#else
+#endif
+	
+#if 0
 //	printf("%d,%d,%d\r\n", attitude.raw[X], attitude.raw[Y], attitude.raw[Z]);
 //	printf("%.4f,%.4f,%.4f,%.4f\r\n", gyro.gyroADCf[Y], gyro.gyroADCf[Z], (float)attitude.raw[Y], (float)attitude.raw[Z]);
 //	printf("%.4f,%.4f,%.4f,%.4f\r\n", (float)ultrasound1DistanceData, (float)ultrasound2DistanceData, (float)ultrasound3DistanceData, (float)ultrasound4DistanceData);
@@ -1102,6 +1157,38 @@ static void taskDataLogger(timeUs_t currentTimeUs)
 		handleBlackbox(currentTimeUs);
 	}
 #endif
+}
+
+static void taskLeftMotorCurrentMeter(timeUs_t currentTimeUs)
+{
+	if (feature(FEATURE_CURRENT_METER)) {
+		static uint32_t motorCurrentLastRecorded = 0;
+		const int32_t motorCurrentSinceLastRecorded = cmp32(currentTimeUs, motorCurrentLastRecorded);
+//		printf("motorCurrentSinceLastRecorded: %d\r\n", motorCurrentSinceLastRecorded);
+		
+		/* taskMotorCurrentMeter period is 20 ms, CURRENT_INTERVAL = 21 ms, motor current sensing process is updated every 40 ms (20 ms * 2) */
+//		if (motorCurrentSinceLastRecorded >= CURRENT_INTERVAL) {
+//			motorCurrentLastRecorded = currentTimeUs;
+//			printf("curr: %d, interval: %u\r\n", motorCurrentSinceLastRecorded, CURRENT_INTERVAL);
+			updateACS712LeftMotorCurrentSensor(motorCurrentSinceLastRecorded);
+//		}
+	}
+}
+
+static void taskRightMotorCurrentMeter(timeUs_t currentTimeUs)
+{
+	if (feature(FEATURE_CURRENT_METER)) {
+		static uint32_t motorCurrentLastRecorded = 0;
+		const int32_t motorCurrentSinceLastRecorded = cmp32(currentTimeUs, motorCurrentLastRecorded);
+//		printf("motorCurrentSinceLastRecorded: %d\r\n", motorCurrentSinceLastRecorded);
+		
+		/* taskMotorCurrentMeter period is 20 ms, CURRENT_INTERVAL = 21 ms, motor current sensing process is updated every 40 ms (20 ms * 2) */
+//		if (motorCurrentSinceLastRecorded >= CURRENT_INTERVAL) {
+//			motorCurrentLastRecorded = currentTimeUs;
+//			printf("curr: %d, interval: %u\r\n", motorCurrentSinceLastRecorded, CURRENT_INTERVAL);
+			updateACS712RightMotorCurrentSensor(motorCurrentSinceLastRecorded);
+//		}
+	}
 }
 
 void fcTasksInit(void)
@@ -1186,4 +1273,8 @@ void fcTasksInit(void)
 	/* +----------------------------------------------------------------------------------------+ */
 	/* +-------------------------------- Data logger Task --------------------------------------+ */
 	/* +----------------------------------------------------------------------------------------+ */
+	
+	
+	setTaskEnabled(TASK_LEFT_MOTOR_CURRENT_METER, true);
+	setTaskEnabled(TASK_RIGHT_MOTOR_CURRENT_METER, true);	
 }

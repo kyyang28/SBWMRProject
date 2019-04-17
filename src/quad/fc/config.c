@@ -28,6 +28,7 @@
 #include "blackbox_io.h"
 #include "button.h"
 #include "ultrasound_hcsr04.h"
+#include "adc.h"
 
 #define BRUSHED_MOTORS_PWM_RATE 			16000
 #define BRUSHLESS_MOTORS_PWM_RATE 			480
@@ -240,6 +241,32 @@ static void ResetPwmEncoderConfig(pwmEncoderConfig_t *pwmEncoderConfig)
 		}
 	}
 }
+
+#ifdef USE_ADC
+static void ResetAdcConfig(adcConfig_t *adcConfig)
+{
+	adcConfig->resolutionScale = 4096.0f;				// adc resolution is 12-bit, 2^12 = 4096
+	
+#ifdef MOTOR_CURRENT1_ADC_PIN
+	adcConfig->motorCurrentMeter1.enabled = true;
+	adcConfig->motorCurrentMeter1.ioTag = IO_TAG(MOTOR_CURRENT1_ADC_PIN);
+#endif
+	
+#ifdef MOTOR_CURRENT2_ADC_PIN
+	adcConfig->motorCurrentMeter2.enabled = true;
+	adcConfig->motorCurrentMeter2.ioTag = IO_TAG(MOTOR_CURRENT2_ADC_PIN);
+#endif
+}
+#endif
+
+static void ResetMotorCurrentMeterConfig(motorCurrentMeterConfig_t *motorCurrentMeterConfig)
+{
+	motorCurrentMeterConfig->currentMeterScale = 185;			// ACS712 Current Sensing Sensitivity: 185 mV / A
+//	motorCurrentMeterConfig->currentMeterScale = 140;			// VNH5019 Motor Drive Current Sensing Sensitivity: 140 mV / A
+	motorCurrentMeterConfig->leftMotorCurrentMeterOffset = 2590.0f;
+	motorCurrentMeterConfig->rightMotorCurrentMeterOffset = 2560.0f;
+}
+
 
 #if 0
 static void ResetUltrasoundTimerConfig(ultrasoundTimerConfig_t *ultrasoundTimerConfig)
@@ -525,6 +552,12 @@ void createDefaultConfig(master_t *config)
 //	ResetMotorConfig(&config->motorConfig);
 	
 	ResetDCBrushedMotorConfig(&config->dcBrushedMotorConfig);
+
+#ifdef USE_ADC
+	ResetAdcConfig(&config->adcConfig);
+#endif
+
+	ResetMotorCurrentMeterConfig(&config->motorCurrentMeterConfig);
 	
 	/* custom mixer, clear by defaults */
 //	for (int i = 0; i < MAX_SUPPORTED_MOTORS; i++) {

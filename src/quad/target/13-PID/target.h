@@ -40,6 +40,13 @@
 //#define DC_BRUSHED_MOTOR2_BIN1	PD10
 //#define DC_BRUSHED_MOTOR2_BIN2	PD11
 
+#define USE_ADC
+#define ADC_INSTANCE					ADC1
+#define MOTOR_CURRENT1_ADC_PIN			PC2
+#define MOTOR_CURRENT2_ADC_PIN			PC3
+//#define MOTOR_CURRENT1_ADC_PIN			PC1
+//#define MOTOR_CURRENT2_ADC_PIN			PC2
+
 /* Ultrasound Pins */
 #define ULTRASOUND
 
@@ -262,7 +269,7 @@
 /* Declare the default features */
 #ifndef DEFAULT_FEATURES
 //#define DEFAULT_FEATURES		0							// could be members of features_e
-#define DEFAULT_FEATURES		(FEATURE_ULTRASOUND)			// could be members of features_e
+#define DEFAULT_FEATURES		(FEATURE_ULTRASOUND | FEATURE_CURRENT_METER)			// could be members of features_e
 //#define DEFAULT_FEATURES		(FEATURE_AIRMODE | FEATURE_MOTOR_STOP)			// could be members of features_e
 //#define DEFAULT_FEATURES		(FEATURE_AIRMODE | FEATURE_SDCARD | FEATURE_BLACKBOX)			// could be members of features_e
 #endif

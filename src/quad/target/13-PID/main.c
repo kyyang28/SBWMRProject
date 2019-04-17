@@ -50,11 +50,11 @@
 
 //#include "debug.h"
 
-//#include "sdcard.h"
-//#include "asyncfatfs.h"
+#include "sdcard.h"
+#include "asyncfatfs.h"
 
-//#include "blackbox.h"
-//#include "blackbox_io.h"
+#include "blackbox.h"
+#include "blackbox_io.h"
 
 #include "pid.h"
 
@@ -62,7 +62,7 @@
 #include "imu.h"
 #include "oled.h"
 //#include "ultrasound.h"
-
+#include "adc.h"
 
 typedef enum {
 	SYSTEM_STATE_INITIALISING			= 0,
@@ -232,6 +232,10 @@ int main(void)
 		}
 	}
 //#endif
+	
+#ifdef USE_ADC
+	adcInit(AdcConfig());
+#endif
 	
 	systemState |= SYSTEM_STATE_SENSORS_READY;
 	

@@ -10,8 +10,9 @@
 .\objects\blackbox.o: .\src\lib\CMSIS\CM4\CoreSupport\core_cmSimd.h
 .\objects\blackbox.o: .\src\quad\target\13-PID\system_stm32f4xx.h
 .\objects\blackbox.o: .\src\lib\CMSIS\CM4\DeviceSupport\ST\STM32F4xx\stm32f4xx_conf.h
-.\objects\blackbox.o: .\src\lib\STM32F4xx_StdPeriph_Drivers\inc\stm32f4xx_tim.h
+.\objects\blackbox.o: .\src\lib\STM32F4xx_StdPeriph_Drivers\inc\stm32f4xx_adc.h
 .\objects\blackbox.o: .\src\lib\CMSIS\CM4\DeviceSupport\ST\STM32F4xx\stm32f4xx.h
+.\objects\blackbox.o: .\src\lib\STM32F4xx_StdPeriph_Drivers\inc\stm32f4xx_tim.h
 .\objects\blackbox.o: .\src\lib\STM32F4xx_StdPeriph_Drivers\inc\stm32f4xx_spi.h
 .\objects\blackbox.o: .\src\lib\STM32F4xx_StdPeriph_Drivers\inc\stm32f4xx_dma.h
 .\objects\blackbox.o: .\src\lib\STM32F4xx_StdPeriph_Drivers\inc\stm32f4xx_usart.h
@@ -72,5 +73,7 @@
 .\objects\blackbox.o: .\src\quad\drivers\OLED\oled.h
 .\objects\blackbox.o: .\src\quad\drivers\BUTTON\button.h
 .\objects\blackbox.o: .\src\quad\drivers\ultrasound\ultrasound_hcsr04.h
+.\objects\blackbox.o: .\src\quad\drivers\ADC\adc.h
+.\objects\blackbox.o: .\src\quad\sensors\ACS712.h
 .\objects\blackbox.o: .\src\quad\drivers\SYSTEM\system.h
 .\objects\blackbox.o: src\quad\blackbox\blackbox_io.h

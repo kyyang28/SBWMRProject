@@ -89,8 +89,8 @@ int fputc(int ch, FILE *f)
 {
     /* Send byte to USART */
 //	gpsWrite(ch);
-	rxSerial1TestWrite(ch);
-//	rxSerial3TestWrite(ch);
+//	rxSerial1TestWrite(ch);
+	rxSerial3TestWrite(ch);
 //    bluetoothSerial6Write(ch);
 	
     /* If everything is OK, you have to return character written */
@@ -107,8 +107,8 @@ int fputc(int ch, FILE *f)
 
 PUTCHAR_PROTOTYPE
 {
-	rxSerial1TestWrite(ch);
-//	rxSerial3TestWrite(ch);
+//	rxSerial1TestWrite(ch);
+	rxSerial3TestWrite(ch);
 //	bluetoothSerial6Write(ch);
 	return ch;
 }

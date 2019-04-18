@@ -97,7 +97,7 @@ Section Cross References
     main.o(i.EnableGPIOClk) refers to stm32f4xx_rcc.o(i.RCC_APB2PeriphClockCmd) for RCC_APB2PeriphClockCmd
     main.o(i.EnableGPIOClk) refers to stm32f4xx_gpio.o(i.GPIO_StructInit) for GPIO_StructInit
     main.o(i.EnableGPIOClk) refers to stm32f4xx_gpio.o(i.GPIO_Init) for GPIO_Init
-    main.o(i.fputc) refers to rxserial1test.o(i.rxSerial1TestWrite) for rxSerial1TestWrite
+    main.o(i.fputc) refers to rxserial3test.o(i.rxSerial3TestWrite) for rxSerial3TestWrite
     main.o(i.main) refers to main.o(i.systemInit) for systemInit
     main.o(i.main) refers to io.o(i.IOGlobalInit) for IOGlobalInit
     main.o(i.main) refers to config_eeprom.o(i.initEEPROM) for initEEPROM
@@ -2312,11 +2312,11 @@ Removing Unused input sections from the image.
     Removing rxserial1test.o(.revsh_text), (4 bytes).
     Removing rxserial1test.o(.rrx_text), (6 bytes).
     Removing rxserial1test.o(i.rxSerial1TestPrint), (16 bytes).
+    Removing rxserial1test.o(i.rxSerial1TestWrite), (16 bytes).
     Removing rxserial3test.o(.rev16_text), (4 bytes).
     Removing rxserial3test.o(.revsh_text), (4 bytes).
     Removing rxserial3test.o(.rrx_text), (6 bytes).
     Removing rxserial3test.o(i.rxSerial3TestPrint), (16 bytes).
-    Removing rxserial3test.o(i.rxSerial3TestWrite), (16 bytes).
     Removing serial.o(.rev16_text), (4 bytes).
     Removing serial.o(.revsh_text), (4 bytes).
     Removing serial.o(.rrx_text), (6 bytes).
@@ -3316,8 +3316,8 @@ Image Symbol Table
     i.rescheduleTask                         0x08008840   Section        0  scheduler.o(i.rescheduleTask)
     i.resetEEPROM                            0x08008874   Section        0  config.o(i.resetEEPROM)
     i.rxSerial1TestInit                      0x0800888c   Section        0  rxserial1test.o(i.rxSerial1TestInit)
-    i.rxSerial1TestWrite                     0x080088b8   Section        0  rxserial1test.o(i.rxSerial1TestWrite)
-    i.rxSerial3TestInit                      0x080088c8   Section        0  rxserial3test.o(i.rxSerial3TestInit)
+    i.rxSerial3TestInit                      0x080088b8   Section        0  rxserial3test.o(i.rxSerial3TestInit)
+    i.rxSerial3TestWrite                     0x080088e8   Section        0  rxserial3test.o(i.rxSerial3TestWrite)
     i.scheduler                              0x080088f8   Section        0  scheduler.o(i.scheduler)
     i.schedulerInit                          0x08008a68   Section        0  scheduler.o(i.schedulerInit)
     i.sdcardInsertionDetectInit              0x08008a88   Section        0  sdcard.o(i.sdcardInsertionDetectInit)
@@ -4356,8 +4356,8 @@ Image Symbol Table
     rescheduleTask                           0x08008841   Thumb Code    42  scheduler.o(i.rescheduleTask)
     resetEEPROM                              0x08008875   Thumb Code    18  config.o(i.resetEEPROM)
     rxSerial1TestInit                        0x0800888d   Thumb Code    40  rxserial1test.o(i.rxSerial1TestInit)
-    rxSerial1TestWrite                       0x080088b9   Thumb Code    10  rxserial1test.o(i.rxSerial1TestWrite)
-    rxSerial3TestInit                        0x080088c9   Thumb Code    38  rxserial3test.o(i.rxSerial3TestInit)
+    rxSerial3TestInit                        0x080088b9   Thumb Code    38  rxserial3test.o(i.rxSerial3TestInit)
+    rxSerial3TestWrite                       0x080088e9   Thumb Code    10  rxserial3test.o(i.rxSerial3TestWrite)
     scheduler                                0x080088f9   Thumb Code   364  scheduler.o(i.scheduler)
     schedulerInit                            0x08008a69   Thumb Code    22  scheduler.o(i.schedulerInit)
     sdcardInsertionDetectInit                0x08008a89   Thumb Code    32  sdcard.o(i.sdcardInsertionDetectInit)
@@ -5085,8 +5085,8 @@ Memory Map of the image
     0x08008840   0x08008840   0x00000034   Code   RO         6958    i.rescheduleTask    scheduler.o
     0x08008874   0x08008874   0x00000018   Code   RO         4925    i.resetEEPROM       config.o
     0x0800888c   0x0800888c   0x0000002c   Code   RO         3939    i.rxSerial1TestInit  rxserial1test.o
-    0x080088b8   0x080088b8   0x00000010   Code   RO         3941    i.rxSerial1TestWrite  rxserial1test.o
-    0x080088c8   0x080088c8   0x00000030   Code   RO         3977    i.rxSerial3TestInit  rxserial3test.o
+    0x080088b8   0x080088b8   0x00000030   Code   RO         3977    i.rxSerial3TestInit  rxserial3test.o
+    0x080088e8   0x080088e8   0x00000010   Code   RO         3979    i.rxSerial3TestWrite  rxserial3test.o
     0x080088f8   0x080088f8   0x00000170   Code   RO         6959    i.scheduler         scheduler.o
     0x08008a68   0x08008a68   0x00000020   Code   RO         6960    i.schedulerInit     scheduler.o
     0x08008a88   0x08008a88   0x00000024   Code   RO         3749    i.sdcardInsertionDetectInit  sdcard.o
@@ -5378,8 +5378,8 @@ Image component sizes
         72          0          0          0          0       1642   rcc.o
         36         10          0         10          0       1403   runtime_config.o
        184         10          0         12          0       3878   rx_pwm.o
-        60         10          0          4          0       1705   rxserial1test.o
-        48         10          0          4          0       1172   rxserial3test.o
+        44          4          0          4          0       1172   rxserial1test.o
+        64         16          0          4          0       1705   rxserial3test.o
        812         90          0         36         96      10673   scheduler.o
       2010        138          0          8         80      18837   sdcard.o
         58          0          0          0          0       1339   sdcard_standard.o

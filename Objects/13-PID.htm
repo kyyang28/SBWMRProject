@@ -3,7 +3,7 @@
 <title>Static Call Graph - [.\Objects\13-PID.axf]</title></head>
 <body><HR>
 <H1>Static Call Graph for image .\Objects\13-PID.axf</H1><HR>
-<BR><P>#&#060CALLGRAPH&#062# ARM Linker, 5060528: Last Updated: Thu Apr 18 15:51:51 2019
+<BR><P>#&#060CALLGRAPH&#062# ARM Linker, 5060528: Last Updated: Thu Apr 18 16:42:52 2019
 <BR><P>
 <H3>Maximum Stack Usage =        552 bytes + Unknown(Functions without stacksize, Cycles, Untraceable Function Pointers)</H3><H3>
 Call chain for Maximum Stack Depth:</H3>
@@ -2680,7 +2680,7 @@ Global Symbols
 <P><STRONG><a name="[78]"></a>fputc</STRONG> (Thumb, 14 bytes, Stack size 8 bytes, main.o(i.fputc))
 <BR><BR>[Stack]<UL><LI>Max Depth = 8<LI>Call Chain = fputc
 </UL>
-<BR>[Calls]<UL><LI><a href="#[1d2]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;rxSerial1TestWrite
+<BR>[Calls]<UL><LI><a href="#[1d2]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;rxSerial3TestWrite
 </UL>
 <BR>[Address Reference Count : 1]<UL><LI> _printf_char_file.o(.text)
 </UL>
@@ -3366,12 +3366,6 @@ Global Symbols
 <BR>[Called By]<UL><LI><a href="#[af]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;main
 </UL>
 
-<P><STRONG><a name="[1d2]"></a>rxSerial1TestWrite</STRONG> (Thumb, 10 bytes, Stack size 0 bytes, rxserial1test.o(i.rxSerial1TestWrite))
-<BR><BR>[Calls]<UL><LI><a href="#[223]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;serialWrite
-</UL>
-<BR>[Called By]<UL><LI><a href="#[78]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;fputc
-</UL>
-
 <P><STRONG><a name="[1fb]"></a>rxSerial3TestInit</STRONG> (Thumb, 38 bytes, Stack size 16 bytes, rxserial3test.o(i.rxSerial3TestInit))
 <BR><BR>[Stack]<UL><LI>Max Depth = 228<LI>Call Chain = rxSerial3TestInit &rArr; openSerialPort &rArr; uartOpen &rArr; serialUART6 &rArr; serialUART &rArr; IOConfigGPIOAF &rArr; GPIO_Init
 </UL>
@@ -3379,6 +3373,12 @@ Global Symbols
 <LI><a href="#[1ab]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;findSerialPortConfig
 </UL>
 <BR>[Called By]<UL><LI><a href="#[af]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;main
+</UL>
+
+<P><STRONG><a name="[1d2]"></a>rxSerial3TestWrite</STRONG> (Thumb, 10 bytes, Stack size 0 bytes, rxserial3test.o(i.rxSerial3TestWrite))
+<BR><BR>[Calls]<UL><LI><a href="#[223]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;serialWrite
+</UL>
+<BR>[Called By]<UL><LI><a href="#[78]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;fputc
 </UL>
 
 <P><STRONG><a name="[209]"></a>scheduler</STRONG> (Thumb, 364 bytes, Stack size 40 bytes, scheduler.o(i.scheduler))
@@ -3571,7 +3571,7 @@ Global Symbols
 </UL>
 
 <P><STRONG><a name="[223]"></a>serialWrite</STRONG> (Thumb, 6 bytes, Stack size 0 bytes, serial.o(i.serialWrite))
-<BR><BR>[Called By]<UL><LI><a href="#[1d2]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;rxSerial1TestWrite
+<BR><BR>[Called By]<UL><LI><a href="#[1d2]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;rxSerial3TestWrite
 </UL>
 
 <P><STRONG><a name="[144]"></a>setAccelerationFilter</STRONG> (Thumb, 58 bytes, Stack size 24 bytes, acceleration.o(i.setAccelerationFilter))

@@ -185,7 +185,7 @@ void ResetSerialConfig(serialConfig_t *serialConfig)
 		serialConfig->portConfigs[index].gps_baudrateIndex	= BAUD_115200;
 //		serialConfig->portConfigs[index].gps_baudrateIndex	= BAUD_57600;
 		serialConfig->portConfigs[index].blackbox_baudrateIndex	= BAUD_115200;		// blackbox port for debugging purposes
-		serialConfig->portConfigs[index].telemetry_baudrateIndex = BAUD_AUTO;
+		serialConfig->portConfigs[index].telemetry_baudrateIndex = BAUD_115200;
 	}
 	
 	serialConfig->portConfigs[0].functionMask = FUNCTION_MSP;
@@ -398,7 +398,8 @@ void targetConfiguration(master_t *config)
 	index = findSerialPortIndexByIdentifier(SERIAL_PORT_USART6);		// index = 2 (serialPortIdentifiers[2] contains SERIAL_PORT_USART6 which is 5)
 	config->serialConfig.portConfigs[index].functionMask = FUNCTION_RX_SERIAL;
 //	config->serialConfig.portConfigs[index].functionMask = FUNCTION_TELEMETRY_FRSKY;	// USART6 used for FRSKY TELEMETRY
-	
+
+#if 0
 	/* Mode activations (HARD-CODED for now)
 	 * 
 	 * IMPORTANT: fc_msp functions will be implemented later to replace the hard-coded mode activation codes
@@ -445,6 +446,7 @@ void targetConfiguration(master_t *config)
 	config->modeActivationProfile.modeActivationConditions[4].auxChannelIndex	= AUX4 - NON_AUX_CHANNEL_COUNT;	// AUX4 - NON_AUX_CHANNEL_COUNT = 7 - 4 = 3
 	config->modeActivationProfile.modeActivationConditions[4].range.startStep	= CHANNEL_VALUE_TO_STEP(900);
 	config->modeActivationProfile.modeActivationConditions[4].range.endStep		= CHANNEL_VALUE_TO_STEP(1150);
+#endif
 }
 
 #ifdef BEEPER

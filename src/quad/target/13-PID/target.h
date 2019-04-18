@@ -75,11 +75,12 @@
 
 /* OLED PINs */
 #define OLED_RST				PC13
-#define OLED_DC					PB4
+#define OLED_DC					PE2
+//#define OLED_DC					PB4
 #define OLED_SCL				PC15
 #define OLED_SDA				PC14
 
-#define BEEPER					PE2		// UNCOMMENT this line to use BEEPER
+//#define BEEPER					PE2		// UNCOMMENT this line to use BEEPER
 
 #define USE_EXTI
 #define BTN_INT_EXTI
@@ -94,8 +95,8 @@
 
 #define USE_UART1
 #ifdef USE_UART1
-#define UART1_RX_PIN        	PB7			// MSP RX
-#define UART1_TX_PIN        	PB6			// MSP TX
+#define UART1_RX_PIN        	PB7			// RPLIDAR TX (MSP RX)
+#define UART1_TX_PIN        	PB6			// RPLIDAR RX (MSP TX)
 #endif
 
 //#define USE_UART2				// uncomment this line to use UART2
@@ -200,7 +201,7 @@
 /* according to <<Micro-SD-Storage-Board-Schematic.pdf>>, card is not present, CD(card detect) pin is HIGH (3V3), card is present, CD is LOW */
 #define SDCARD_DETECT_INVERTED
 #define SDCARD_SPI_INSTANCE		SPI3
-#define SDCARD_DETECT_PIN		PC1				// Card Detect PIN
+#define SDCARD_DETECT_PIN		PC1					// Card Detect PIN
 #define SDCARD_SPI_CS_PIN		SPI3_NSS_PIN		// SPI3_NSS_PIN = PE5
 
 /* Table 42 from <RM0090-STM32F407-Reference_mannual.pdf> */
@@ -210,7 +211,7 @@
 #define SDCARD_DMA_CHANNEL_TX_COMPLETE_FLAG		DMA_FLAG_TCIF5
 //#define SDCARD_DMA_CHANNEL_TX_COMPLETE_FLAG		DMA_FLAG_TCIF4		// for DMA1_Stream4
 
-/* SPI2 is on the APB1 bus whose clock runs at 84MHz. Divide to under 400kHz for initialisation */
+/* SPI2 is on the APB1 bus running at 84MHz. Divide to under 400kHz for initialisation */
 #define SDCARD_SPI_INITIALISATION_CLOCK_DIVISOR		256		// 84MHz / 256 = 328125 Hz (328.125kHz)
 
 /* Divide to under 25MHz for normal operation */

@@ -890,7 +890,8 @@ static void taskMotorEncoder(timeUs_t currentTimeUs)
 //	printf("currentTimeUs: %u\r\n", currentTimeUs);
 	
 	Encoder1 = Read_Encoder(2);		// 2: TIM2, left encoder
-	Encoder2 = Read_Encoder(4);		// 4: TIM4, right encoder
+	Encoder2 = Read_Encoder(3);		// 3: TIM3, right encoder
+//	Encoder2 = Read_Encoder(4);		// 4: TIM4, right encoder
 	
 //	printf("%d, %d\r\n", Encoder1, Encoder2);
 	

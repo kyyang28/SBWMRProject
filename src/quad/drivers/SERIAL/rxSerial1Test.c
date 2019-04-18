@@ -6,12 +6,13 @@ static serialPort_t *rxSerial1TestPort;
 
 void rxSerial1TestInit(void)
 {
-	serialPortConfig_t *rxSerialTestPortConfig = findSerialPortConfig(FUNCTION_TELEMETRY_FRSKY);
+	serialPortConfig_t *rxSerialTestPortConfig = findSerialPortConfig(FUNCTION_MSP);
 	if (!rxSerialTestPortConfig)
 		return;
 	
 	/* gpsPortConfig->identifier = SERIAL_PORT_USART1 */
-	rxSerial1TestPort = openSerialPort(rxSerialTestPortConfig->identifier, FUNCTION_TELEMETRY_FRSKY, NULL, 115200, MODE_RXTX, SERIAL_NOT_INVERTED);
+//	rxSerial1TestPort = openSerialPort(rxSerialTestPortConfig->identifier, FUNCTION_TELEMETRY_FRSKY, NULL, 1382400, MODE_RXTX, SERIAL_NOT_INVERTED);
+	rxSerial1TestPort = openSerialPort(rxSerialTestPortConfig->identifier, FUNCTION_MSP, NULL, 115200, MODE_RXTX, SERIAL_NOT_INVERTED);
 	if (!rxSerial1TestPort)
 		return;
 }
